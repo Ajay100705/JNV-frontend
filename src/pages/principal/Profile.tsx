@@ -12,6 +12,17 @@ import { toast } from 'sonner';
 export const PrincipalProfile: React.FC = () => {
   const { user } = useAuth();
 
+  const displayName =
+  user?.first_name && user?.last_name
+    ? `${user.first_name} ${user.last_name}`
+    : user?.email || "User";
+
+const initials = displayName
+  .split(" ")
+  .map((n: string) => n[0])
+  .join("");
+
+
   const handleSave = () => {
     toast.success('Profile updated successfully');
   };
@@ -30,9 +41,9 @@ export const PrincipalProfile: React.FC = () => {
           <CardContent className="pt-6 text-center">
             <div className="relative inline-block">
               <Avatar className="w-32 h-32 mx-auto ring-4 ring-blue-100">
-                <AvatarImage src={user?.avatar} alt={user?.name} />
+                <AvatarImage src={user?.avatar} alt={displayName} />
                 <AvatarFallback className="text-4xl bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                  {user?.name.split(' ').map(n => n[0]).join('')}
+                  {initials}
                 </AvatarFallback>
               </Avatar>
               <Button
@@ -43,7 +54,7 @@ export const PrincipalProfile: React.FC = () => {
               </Button>
             </div>
             
-            <h2 className="mt-4 text-xl font-bold text-gray-900">{user?.name}</h2>
+            <h2 className="mt-4 text-xl font-bold text-gray-900">{displayName}</h2>
             <p className="text-gray-500 capitalize">{user?.role}</p>
             
             <div className="mt-6 space-y-3 text-left">
@@ -77,7 +88,7 @@ export const PrincipalProfile: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label>Full Name</Label>
-                  <Input defaultValue={user?.name} />
+                  <Input defaultValue={displayName} />
                 </div>
                 <div className="space-y-2">
                   <Label>Email Address</Label>
