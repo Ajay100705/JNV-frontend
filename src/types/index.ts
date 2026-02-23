@@ -25,24 +25,60 @@ export interface AuthContextType {
 
 // Student Interface
 export interface Student {
-  id: string;
-  name: string;
-  rollNumber: string;
-  house: string;
-  class: string;
-  section: string;
-  attendance: number;
-  parentId?: string;
-}
+  id: number;
+  admission_date?: string;
+
+  username?: string;
+  first_name: string;
+  last_name: string;
+  photo?: string;
+  date_of_birth?: string;
+  email?: string;
+  gender?: string;
+
+
+
+  classroom?: {
+    id: number;
+    class_name: string;
+    section: string;
+  };
+
+  house?: {
+    id: number;
+    house_name: string;
+    house_category: string;
+  };
+
+  parent?: {
+    id: number;
+    first_name?: string;
+    last_name?: string;
+    phone1?: string;
+    phone2?: string;
+    email?: string;
+    job?: string;
+    present_address?: string;
+    permanent_address?: string;
+    photo?: string;
+  };
+  
+  };
+
 
 // Teacher Interface
 export interface Teacher {
-  id: string;
-  name: string;
+  id: number;
+  first_name: string;
+  last_name: string;
   email: string;
-  subject: string;
-  phone: string;
-  qualification: string;
+  gender?: string;
+  phone?: string;
+  subject?: string;
+  qualification?: string;
+  experience_years?: number;
+  date_of_joining?: string;
+  photo?: string;
 }
 
 // House Master Interface

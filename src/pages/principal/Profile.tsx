@@ -28,7 +28,7 @@ const initials = displayName
   };
 
   return (
-    <DashboardLayout>
+    <>
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
@@ -160,6 +160,6 @@ const initials = displayName
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </>
   );
 };

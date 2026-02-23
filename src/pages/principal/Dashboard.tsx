@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { mockApi } from '@/services/api';
 import type { DashboardStats } from '@/types';
+import { useNavigate } from 'react-router-dom';
 import {
   Users,
   GraduationCap,
@@ -36,7 +36,8 @@ const StatCard: React.FC<{
   trend?: number;
   color: string;
   delay: number;
-}> = ({ title, value, icon: Icon, trend, color, delay }) => {
+  onClick?: () => void;
+}> = ({ title, value, icon: Icon, trend, color, delay, onClick }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -44,12 +45,15 @@ const StatCard: React.FC<{
     return () => clearTimeout(timer);
   }, [delay]);
 
+
+
   return (
     <Card
       className={cn(
-        'relative overflow-hidden transition-all duration-500 transform',
+        'relative overflow-hidden transition-all duration-500 transform cursor-pointer hover:shadow-lg',
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
       )}
+      onClick={onClick}
     >
       <div className={`absolute top-0 right-0 w-32 h-32 ${color} opacity-10 rounded-full -translate-y-1/2 translate-x-1/2`} />
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -86,6 +90,7 @@ const COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'];
 export const PrincipalDashboard: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -104,11 +109,9 @@ export const PrincipalDashboard: React.FC = () => {
 
   if (isLoading) {
     return (
-      <DashboardLayout>
         <div className="flex items-center justify-center h-[60vh]">
           <Spinner className="w-12 h-12 text-blue-600" />
         </div>
-      </DashboardLayout>
     );
   }
 
@@ -124,7 +127,7 @@ export const PrincipalDashboard: React.FC = () => {
   })) || [];
 
   return (
-    <DashboardLayout>
+    <>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
@@ -152,6 +155,7 @@ export const PrincipalDashboard: React.FC = () => {
           trend={5.2}
           color="bg-blue-500"
           delay={0}
+          onClick={() => navigate('/principal/students')}
         />
         <StatCard
           title="Total Teachers"
@@ -160,6 +164,7 @@ export const PrincipalDashboard: React.FC = () => {
           trend={2.1}
           color="bg-purple-500"
           delay={100}
+          onClick={() => navigate('/principal/teachers')}
         />
         <StatCard
           title="Total Parents"
@@ -168,6 +173,7 @@ export const PrincipalDashboard: React.FC = () => {
           trend={3.8}
           color="bg-emerald-500"
           delay={200}
+          onClick={() => navigate('/principal/parents')}
         />
         <StatCard
           title="Total Houses"
@@ -176,6 +182,7 @@ export const PrincipalDashboard: React.FC = () => {
           trend={0}
           color="bg-amber-500"
           delay={300}
+          onClick={() => navigate('/principal/houses')}
         />
       </div>
 
@@ -251,8 +258,8 @@ export const PrincipalDashboard: React.FC = () => {
         </CardHeader>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: 'Add Teacher', icon: Users, color: 'bg-blue-500' },
-            { label: 'Add Student', icon: GraduationCap, color: 'bg-purple-500' },
+            { label: 'Add Teacher', icon: Users, color: 'bg-blue-500', path: '/principal/add-teacher' },
+            { label: 'Add Student', icon: GraduationCap, color: 'bg-purple-500', path: '/principal/add-student' },
             { label: 'Add Parent', icon: UserCircle, color: 'bg-emerald-500' },
             { label: 'View Reports', icon: TrendingUp, color: 'bg-amber-500' },
           ].map((action, index) => (
@@ -261,6 +268,7 @@ export const PrincipalDashboard: React.FC = () => {
               variant="outline"
               className="flex flex-col items-center gap-3 h-auto py-6 hover:bg-gray-50 transition-all"
               style={{ animationDelay: `${index * 100}ms` }}
+              onClick={() => navigate(action.path || '#')}
             >
               <div className={`${action.color} p-3 rounded-xl`}>
                 <action.icon className="w-6 h-6 text-white" />
@@ -270,6 +278,6 @@ export const PrincipalDashboard: React.FC = () => {
           ))}
         </div>
       </Card>
-    </DashboardLayout>
+    </>
   );
 };

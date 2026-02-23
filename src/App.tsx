@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'sonner';
 import { AuthProvider, useAuth, getDashboardRoute } from '@/contexts/AuthContext';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { DashboardLayout } from './components/layout/DashboardLayout';
 
 // Pages
 import { Login } from '@/pages/Login';
@@ -24,11 +25,13 @@ import { HouseMasterProfile } from '@/pages/housemaster/Profile';
 import { TeacherDashboard } from '@/pages/teacher/Dashboard';
 import { TeacherStudents } from '@/pages/teacher/Students';
 import { TeacherProfile } from '@/pages/teacher/Profile';
+import  AddTeacher  from '@/pages/teacher/AddTeacher';
 
 // Parent Pages
 import { ParentDashboard } from '@/pages/parent/Dashboard';
 import { ParentChild } from '@/pages/parent/Child';
 import { ParentProfile } from '@/pages/parent/Profile';
+import AddStudent from '@/pages/parent/AddStudent';
 
 // Role-based redirect component
 const RoleBasedRedirect: React.FC = () => {
@@ -73,55 +76,31 @@ function App() {
           {/* Root redirect based on role */}
           <Route path="/" element={<RoleBasedRedirect />} />
 
+
           {/* Principal Routes */}
+
           <Route
-            path="/principal/dashboard"
+            path="/principal"
             element={
-              <ProtectedRoute allowedRoles={['principal']}>
-                <PrincipalDashboard />
+              <ProtectedRoute allowedRoles={["principal"]}>
+                <DashboardLayout />
               </ProtectedRoute>
             }
-          />
-          <Route
-            path="/principal/teachers"
-            element={
-              <ProtectedRoute allowedRoles={['principal']}>
-                <PrincipalTeachers />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/principal/housemasters"
-            element={
-              <ProtectedRoute allowedRoles={['principal']}>
-                <PrincipalHouseMasters />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/principal/parents"
-            element={
-              <ProtectedRoute allowedRoles={['principal']}>
-                <PrincipalParents />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/principal/students"
-            element={
-              <ProtectedRoute allowedRoles={['principal']}>
-                <PrincipalStudents />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/principal/profile"
-            element={
-              <ProtectedRoute allowedRoles={['principal']}>
-                <PrincipalProfile />
-              </ProtectedRoute>
-            }
-          />
+          >
+            <Route index element={<PrincipalDashboard />} />
+
+            <Route path="dashboard" element={<PrincipalDashboard />} />
+            
+            <Route path="teachers" element={<PrincipalTeachers />} />
+            <Route path="housemasters" element={<PrincipalHouseMasters />} />
+            <Route path="parents" element={<PrincipalParents />} />
+            <Route path="students" element={<PrincipalStudents />} />
+            <Route path="profile" element={<PrincipalProfile />} />
+            <Route path="add-teacher" element={<AddTeacher />} />
+            <Route path="add-student" element={<AddStudent />} />
+          </Route>
+
+
 
           {/* House Master Routes */}
           <Route

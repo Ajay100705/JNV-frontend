@@ -6,53 +6,6 @@ import { toast } from 'sonner';
 import api from "@/api/axios";
 
 
-// Mock users for demonstration
-// const MOCK_USERS: Record<string, { password: string; user: User }> = {
-//   'principal@jnv.edu': {
-//     password: 'principal123',
-//     user: {
-//       id: '1',
-//       email: 'principal@jnv.edu',
-//       name: 'Dr. Rajesh Kumar',
-//       role: 'principal',
-//       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=principal',
-//     },
-//   },
-//   'housemaster@jnv.edu': {
-//     password: 'housemaster123',
-//     user: {
-//       id: '2',
-//       email: 'housemaster@jnv.edu',
-//       name: 'Mr. Suresh Patel',
-//       role: 'housemaster',
-//       house: 'Shivaji House',
-//       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=housemaster',
-//     },
-//   },
-//   'teacher@jnv.edu': {
-//     password: 'teacher123',
-//     user: {
-//       id: '3',
-//       email: 'teacher@jnv.edu',
-//       name: 'Mrs. Priya Sharma',
-//       role: 'teacher',
-//       subject: 'Mathematics',
-//       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=teacher',
-//     },
-//   },
-//   'parent@jnv.edu': {
-//     password: 'parent123',
-//     user: {
-//       id: '4',
-//       email: 'parent@jnv.edu',
-//       name: 'Mr. Amit Singh',
-//       role: 'parent',
-//       childId: 'S001',
-//       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=parent',
-//     },
-//   },
-// };
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -62,63 +15,56 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     // Check for stored token on mount
     const token = localStorage.getItem('jnv_token');
-    const storedUser = localStorage.getItem('jnv_user');
-    
-    if (token && storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-      } catch (error) {
-        localStorage.removeItem('jnv_token');
-        localStorage.removeItem('jnv_user');
-      }
+
+    if (!token) {
+      setIsLoading(false);
+      return;
     }
-    setIsLoading(false);
+
+    api
+      .get("/auth/me/")
+      .then((res) => {
+        setUser(res.data);
+      })
+      .catch(() => {
+        localStorage.clear();
+      })
+      .finally(() => setIsLoading(false));
   }, []);
 
-  const login = async (email: string, password: string): Promise<void> => {
+  const login = async (username: string, password: string): Promise<void> => {
     setIsLoading(true);
     
     try {
       // send credentials to backend API
       const res = await api.post("/auth/login/", {
-        email,
+        username,
         password,
       });
 
       // backend returns access token and user info
-      const { access, user:backenduser } = res.data;
+      const { access} = res.data;
 
       // save token
       localStorage.setItem('jnv_token', access);
 
-      // save user info
-      localStorage.setItem('jnv_user', JSON.stringify(backenduser));
+      // fetch real user from backend
+      const me = await api.get("/auth/me/");
+      setUser(me.data);
 
-      // update state
-      setUser(backenduser);
-
-      toast.success(`Welcome ${backenduser.name}`);
+      toast.success(`Welcome ${me.data.first_name}`);
     } catch (error: any) {
-      toast.error('Invalid email or password');
+      toast.error('Invalid username or password');
       throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-
-
-  // const logout = () => {
-  //   localStorage.removeItem('jnv_token');
-  //   localStorage.removeItem('jnv_user');
-  //   setUser(null);
-  //   toast.success('Logged out successfully');
-  // };
+// clear token and user info on logout
   const logout = () => {
   localStorage.clear();
   setUser(null);
-
   window.location.href = "/login";
 };
 
