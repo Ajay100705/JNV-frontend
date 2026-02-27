@@ -6,6 +6,8 @@ import { toast } from 'sonner';
 import api from "@/api/axios";
 
 
+
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -34,6 +36,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (username: string, password: string): Promise<void> => {
     setIsLoading(true);
+
+  
     
     try {
       // send credentials to backend API
@@ -68,6 +72,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   window.location.href = "/login";
 };
 
+const refreshUser = async (): Promise<void> => {
+    try {
+      const res = await api.get("/auth/me/");
+      setUser(res.data);
+    } catch (error) {
+      logout();
+    }
+  };
+
 
   return (
     <AuthContext.Provider
@@ -77,6 +90,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         isLoading,
         login,
         logout,
+        refreshUser,
       }}
     >
       {children}

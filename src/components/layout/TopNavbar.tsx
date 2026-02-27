@@ -1,6 +1,6 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Link } from '@/mocks/react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -8,7 +8,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
+  // DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Bell,
   LogOut,
-  Settings,
+  // Settings,
   User,
   ChevronDown,
   Mail,
@@ -29,6 +29,7 @@ interface TopNavbarProps {
 
 export const TopNavbar: React.FC<TopNavbarProps> = ({ isCollapsed }) => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   if (!user) return null;
 
@@ -61,7 +62,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ isCollapsed }) => {
             <h2 className="text-lg font-semibold text-gray-800">
               Welcome back,{" "}
               <span className="text-blue-600">
-                {user.first_name || user.email.split("@")[0]}
+                {user.first_name || user.email.split("@")[0] || "User"}
               </span>
               !
             </h2>
@@ -87,7 +88,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ isCollapsed }) => {
           >
             <Bell className="h-5 w-5 text-gray-600" />
             <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white animate-bounce">
-              3
+              5
             </span>
           </Button>
 
@@ -111,9 +112,17 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ isCollapsed }) => {
                 className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-gray-100"
               >
                 <Avatar className="h-9 w-9 ring-2 ring-blue-500/30 ring-offset-2">
-                  <AvatarImage src={user.avatar} alt={user.first_name + " " + user.last_name} />
+                  <AvatarImage
+                    src={
+                      user.profile?.photo
+                        ? `http://127.0.0.1:8000${user.profile.photo}`
+                        : undefined
+                    }
+                    alt={`${user.first_name} ${user.last_name}`}
+                  />
                   <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-sm">
-                    {user.first_name[0]}{user.last_name[0]}
+                    {(user.first_name?.[0] || "")}
+                    {(user.last_name?.[0] || "")}
                   </AvatarFallback>
                 </Avatar>
                 <div className="hidden md:block text-left">
@@ -131,26 +140,40 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ isCollapsed }) => {
                 <ChevronDown className="h-4 w-4 text-gray-400 hidden md:block" />
               </Button>
             </DropdownMenuTrigger>
+
             <DropdownMenuContent align="end" className="w-64">
-              <DropdownMenuLabel className="font-normal">
+
+              <DropdownMenuItem
+                onClick={() => navigate(`/${user.role}/dashboard`)}
+                className="cursor-pointer focus:bg-gray-100"
+              >
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium">{user.first_name} {user.last_name}</p>
-                  <p className="text-xs text-muted-foreground">{user.email}</p>
+                  <p className="text-sm font-medium">
+                    {user.first_name} {user.last_name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {user.email}
+                  </p>
                 </div>
-              </DropdownMenuLabel>
+              </DropdownMenuItem>
+
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to={`/${user.role}/profile`} className="cursor-pointer">
+
+              <DropdownMenuItem 
+                onClick={() => navigate(`/${user.role}/profile`)}
+              >
                   <User className="mr-2 h-4 w-4" />
                   Profile
-                </Link>
+                
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
+
+              {/* <DropdownMenuItem asChild>
                 <Link to={`/${user.role}/profile`} className="cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" />
                   Settings
                 </Link>
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
+
               <DropdownMenuItem className="cursor-pointer">
                 <Calendar className="mr-2 h-4 w-4" />
                 Calendar

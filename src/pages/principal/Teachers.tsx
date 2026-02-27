@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import type { Teacher } from "@/types";
-import AddTeacher from "@/pages/teacher/AddTeacher";
+import AddTeacher from "@/pages/principal/AddTeacher";
 import { getTeachers, deleteTeacher } from "@/services/teacherService";
 
 import {
@@ -43,7 +43,7 @@ import {
 } from "lucide-react";
 
 import { toast } from "sonner";
-import { set } from "date-fns";
+// import { set } from "date-fns";
 
 export const PrincipalTeachers: React.FC = () => {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -51,6 +51,7 @@ export const PrincipalTeachers: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [editTeacher, setEditTeacher] = useState<Teacher | null>(null);
+  const [selectedSubject, setSelectedSubject] = useState<string>("all");
 
   useEffect(() => {
     const fetchTeachers = async () => {
@@ -85,13 +86,21 @@ export const PrincipalTeachers: React.FC = () => {
     };
   }, []);
 
-  const filteredTeachers = teachers.filter((teacher) =>
-    `${teacher.first_name} ${teacher.last_name}`
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase()) ||
-    teacher.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    teacher.subject?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredTeachers = teachers.filter((teacher) => {
+    const fullName = `${teacher.first_name} ${teacher.last_name}`.toLowerCase();
+    const email = teacher.email?.toLowerCase() || "";
+    const subject = teacher.subject?.toLowerCase() || "";
+
+    const matchesSearch =
+      fullName.includes(searchQuery.toLowerCase()) ||
+      email.includes(searchQuery.toLowerCase()) ||
+      subject.includes(searchQuery.toLowerCase());
+
+    const matchesSubject =
+      selectedSubject === "all" || teacher.subject === selectedSubject;
+
+    return matchesSearch && matchesSubject;
+  });
 
   const handleDelete = async (id: number) => {
     if (!window.confirm("Delete teacher?")) return;
@@ -113,6 +122,12 @@ export const PrincipalTeachers: React.FC = () => {
       </div>
     );
   }
+
+  const uniqueSubjects = Array.from(
+    new Set(
+      teachers.map((teacher) => teacher.subject).filter((subject): subject is string => Boolean(subject))
+    )
+  );
 
   return (
     <>
@@ -146,14 +161,33 @@ export const PrincipalTeachers: React.FC = () => {
       {/* Search */}
       <Card className="mb-4">
         <CardContent className="pt-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-            <Input
-              className="pl-10"
-              placeholder="Search teachers..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          <div className="flex flex-col md:flex-row gap-4">
+
+            {/* Search */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+              <Input
+                className="pl-10"
+                placeholder="Search teachers..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+
+            {/* Subject Dropdown */}
+            <select
+              value={selectedSubject}
+              onChange={(e) => setSelectedSubject(e.target.value)}
+              className="border rounded-md px-3 py-2 bg-white text-sm"
+            >
+              <option value="all">All Subjects</option>
+              {uniqueSubjects.map((subject) => (
+                <option key={subject} value={subject}>
+                  {subject}
+                </option>
+              ))}
+            </select>
+
           </div>
         </CardContent>
       </Card>
@@ -171,7 +205,8 @@ export const PrincipalTeachers: React.FC = () => {
                 <TableHead>Photo</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Subject</TableHead>
-                <TableHead>Phone</TableHead>
+                <TableHead>Phone1</TableHead>
+                <TableHead>Subject</TableHead>
                 <TableHead>Qualification</TableHead>
                 <TableHead />
               </TableRow>
@@ -208,7 +243,14 @@ export const PrincipalTeachers: React.FC = () => {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Phone size={14} className="text-gray-500" />
-                      {teacher.phone}
+                      {teacher.phone1}
+                    </div>
+                    </TableCell>
+
+                    <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Phone size={14} className="text-gray-500" />
+                      {teacher.subject}
                     </div>
                     </TableCell>
 

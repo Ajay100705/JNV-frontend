@@ -316,6 +316,8 @@ export default function AddStudent({ existingStudent }: Props) {
             <input name="parent_last_name" placeholder="Last Name" className="input h-12" onChange={handleChange} value={form.parent_last_name} />
 
             <input name="parent_phone1" placeholder="Phone" className="input h-12" onChange={handleChange} value={form.parent_phone1} />
+            <input name="parent_email" placeholder="Email" className="input h-12" onChange={handleChange} value={form.parent_email || ""} />
+
 
             <textarea name="present_address" placeholder="Present Address" className="input col-span-2" onChange={handleChange} value={form.present_address || ""} />
             <textarea name="permanent_address" placeholder="Permanent Address" className="input col-span-2" onChange={handleChange} value={form.permanent_address || ""} />

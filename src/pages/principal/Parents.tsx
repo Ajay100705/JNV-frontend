@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
-import { mockApi } from '@/services/api';
 import type { Parent } from '@/types';
+import { getParents } from '@/services/parentService';
 import {
   Table,
   TableBody,
@@ -49,8 +48,8 @@ export const PrincipalParents: React.FC = () => {
   useEffect(() => {
     const fetchParents = async () => {
       try {
-        const response = await mockApi.getParents();
-        setParents(response.data);
+        const data = await getParents();
+        setParents(data);
       } catch (error) {
         toast.error('Failed to fetch parents');
       } finally {
@@ -63,12 +62,14 @@ export const PrincipalParents: React.FC = () => {
 
   const filteredParents = parents.filter(
     (parent) =>
-      parent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      parent.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      parent.childName.toLowerCase().includes(searchQuery.toLowerCase())
+      parent.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      parent.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      parent.children?.some(child => 
+        child.first_name.toLowerCase().includes(searchQuery.toLowerCase())
+      ) || false
   );
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: number) => {
     setParents(parents.filter((p) => p.id !== id));
     toast.success('Parent deleted successfully');
   };
@@ -177,7 +178,7 @@ export const PrincipalParents: React.FC = () => {
                           <UserCircle className="w-5 h-5" />
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">{parent.name}</p>
+                          <p className="font-medium text-gray-900">{parent.first_name} {parent.last_name}</p>
                           <p className="text-sm text-gray-500">{parent.email}</p>
                         </div>
                       </div>
@@ -185,15 +186,15 @@ export const PrincipalParents: React.FC = () => {
                     <TableCell>
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Phone className="w-4 h-4" />
-                        {parent.phone}
+                        {parent.phone1? parent.phone1 : 'N/A'}
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <GraduationCap className="w-4 h-4 text-blue-500" />
                         <div>
-                          <p className="font-medium text-sm">{parent.childName}</p>
-                          <p className="text-xs text-gray-500">ID: {parent.childId}</p>
+                          <p className="font-medium text-sm">{parent.children?.[0]?.first_name} {parent.children?.[0]?.last_name}</p>
+                          <p className="text-xs text-gray-500">ID: {parent.children?.[0]?.admission_number}</p>
                         </div>
                       </div>
                     </TableCell>

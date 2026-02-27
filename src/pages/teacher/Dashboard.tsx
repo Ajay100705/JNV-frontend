@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
@@ -96,16 +95,16 @@ export const TeacherDashboard: React.FC = () => {
 
   if (isLoading) {
     return (
-      <DashboardLayout>
+      
         <div className="flex items-center justify-center h-[60vh]">
           <Spinner className="w-12 h-12 text-blue-600" />
         </div>
-      </DashboardLayout>
+      
     );
   }
 
   return (
-    <DashboardLayout>
+    <>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
@@ -113,7 +112,7 @@ export const TeacherDashboard: React.FC = () => {
             <BookOpen className="w-8 h-8 text-blue-600" />
             <h1 className="text-3xl font-bold text-gray-900">Teacher Dashboard</h1>
           </div>
-          <p className="text-gray-500 mt-1">Subject: {user?.subject}</p>
+          <p className="text-gray-500 mt-1">Subject: {user?.profile?.subject || "N/A"}</p>
         </div>
         <Button 
           className="gap-2 bg-blue-600 hover:bg-blue-700"
@@ -249,7 +248,7 @@ export const TeacherDashboard: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

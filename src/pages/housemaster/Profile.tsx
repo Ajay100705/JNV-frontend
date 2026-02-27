@@ -1,5 +1,5 @@
 import React from 'react';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
+// import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,7 +28,7 @@ const initials = displayName
   };
 
   return (
-    <DashboardLayout>
+    <>
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
@@ -151,6 +151,6 @@ const initials = displayName
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </>
   );
 };

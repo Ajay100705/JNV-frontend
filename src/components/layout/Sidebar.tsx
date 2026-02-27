@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
@@ -15,7 +15,9 @@ import {
   ClipboardList,
   ChevronLeft,
   ChevronRight,
+  LogOut,
 } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { UserRole } from '@/types';
@@ -30,6 +32,8 @@ interface SidebarProps {
   isCollapsed: boolean;
   onToggle: () => void;
 }
+
+
 
 const roleMenuItems: Record<UserRole, MenuItem[]> = {
   principal: [
@@ -60,15 +64,24 @@ const roleMenuItems: Record<UserRole, MenuItem[]> = {
     { label: 'Messages', path: '/parent/messages', icon: MessageSquare },
     { label: 'Profile', path: '/parent/profile', icon: Settings },
   ],
+  student: [
+    { label: 'Dashboard', path: '/student/dashboard', icon: LayoutDashboard },
+    { label: 'Attendance', path: '/student/attendance', icon: Calendar },
+    { label: 'Marks', path: '/student/marks', icon: ClipboardList },
+    { label: 'Profile', path: '/student/profile', icon: Settings },
+  ],
 };
 
 export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const location = useLocation();
 
   if (!user) return null;
 
   const menuItems = roleMenuItems[user.role];
+  const dashboardPath = `/${user.role}/dashboard`;
+
+  const [logoError, setLogoError] = useState(false);
 
   return (
     <aside
@@ -78,10 +91,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
       )}
     >
       {/* Logo Section */}
-      <div className="flex h-16 items-center justify-between border-b border-slate-700 px-4">
+      <Link 
+        to={dashboardPath} 
+        className="flex h-16 items-center justify-between border-b border-slate-700 px-4">
         <div className={cn('flex items-center gap-3', isCollapsed && 'justify-center w-full')}>
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg shadow-blue-500/30">
-            <School className="h-6 w-6 text-white" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-lg overflow-hidden">
+            {!logoError ? (
+              <img
+                src="/navodaya.jpeg"   // your actual file name
+                alt="JNV School Logo"
+                className="h-8 w-8 object-contain"
+                onError={() => setLogoError(true)}
+              />
+            ) : (
+              <School className="h-6 w-6 text-blue-600" />
+            )}
           </div>
           {!isCollapsed && (
             <div className="overflow-hidden">
@@ -92,7 +116,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
             </div>
           )}
         </div>
-      </div>
+      </Link>
 
       {/* Toggle Button */}
       <Button
@@ -146,18 +170,89 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
 
         {/* Role Badge */}
         {!isCollapsed && (
-          <div className="mt-8 rounded-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 p-4">
-            <p className="text-xs text-emerald-400 uppercase tracking-wider font-semibold">Logged in as</p>
-            <p className="text-sm font-medium text-white capitalize mt-1">{user.role}</p>
-            {user.house && (
-              <p className="text-xs text-slate-400 mt-1">{user.house}</p>
+          // <div className="mt-8 rounded-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 p-4">
+          //   <p className="text-xs text-emerald-400 uppercase tracking-wider font-semibold">
+          //     Logged in as
+          //   </p>
+
+          //   <p className="text-sm font-medium text-white capitalize mt-1">
+          //     {user.role}
+          //   </p>
+
+          //   {/* Teacher & Housemaster Subject */}
+          //   {(user.role === "teacher" || user.role === "housemaster") &&(
+              
+          //       <p className="text-xs text-slate-400 mt-1">
+          //         Subject: {user.profile.subject || "N/A"}
+          //       </p>
+          //     )}
+
+          //   {/* Student House */}
+          //   {user.role === "student" &&
+          //     user.profile?.house && (
+          //       <p className="text-xs text-slate-400 mt-1">
+          //         House: {user.profile.house.house_name}
+          //       </p>
+          //     )}
+
+          //   {/* Parent Children Count */}
+          //   {user.role === "parent" &&
+          //     user.profile?.children?.length && (
+          //       <p className="text-xs text-slate-400 mt-1">
+          //         Children: {user.profile.children.length}
+          //       </p>
+          //     )}
+          // </div>
+
+          <div className="mt-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-4">
+            <p className="text-xs text-emerald-400 uppercase tracking-wider font-semibold">
+              Logged in as
+            </p>
+
+            <p className="text-sm font-medium text-white capitalize mt-1">
+              {user.role}
+            </p>
+
+            {(user.role === 'teacher' || user.role === 'housemaster') && (
+              <p className="text-xs text-slate-400 mt-1">
+                Subject: {user.profile?.subject ?? 'Not Assigned'}
+              </p>
             )}
-            {user.subject && (
-              <p className="text-xs text-slate-400 mt-1">{user.subject}</p>
+
+            {user.role === 'student' && (
+              <p className="text-xs text-slate-400 mt-1">
+                House: {user.profile?.house?.house_name ?? 'Not Assigned'}
+              </p>
+            )}
+
+            {user.role === 'parent' && (
+              <p className="text-xs text-slate-400 mt-1">
+                Children: {user.profile?.children?.length ?? 0}
+              </p>
             )}
           </div>
+
+
         )}
+
+        
       </ScrollArea>
+
+
+      {/* Logout Button */}
+      <div className="absolute bottom-4 left-0 w-full px-3">
+        <Button
+          variant="ghost"
+          onClick={logout}
+          className={cn(
+            "w-full flex items-center gap-3 text-red-400 hover:text-red-500 hover:bg-red-500/10 rounded-xl",
+            isCollapsed && "justify-center px-2"
+          )}
+        >
+          <LogOut className="h-5 w-5" />
+          {!isCollapsed && <span>Sign Out</span>}
+        </Button>
+      </div>
     </aside>
   );
 };

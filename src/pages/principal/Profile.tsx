@@ -1,5 +1,5 @@
 import React from 'react';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,24 +8,157 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { Camera, Mail, Phone, MapPin, Calendar, Shield, Save } from 'lucide-react';
 import { toast } from 'sonner';
+import api from "@/api/axios";
+import { Eye, EyeOff } from 'lucide-react'; 
+
 
 export const PrincipalProfile: React.FC = () => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
+
+  if (!user || user.role !== "principal") {
+    return null;
+  }
 
   const displayName =
   user?.first_name && user?.last_name
     ? `${user.first_name} ${user.last_name}`
     : user?.email || "User";
 
-const initials = displayName
-  .split(" ")
-  .map((n: string) => n[0])
-  .join("");
+  const initials = `${user.first_name?.[0] || ""}${user.last_name?.[0] || ""}`.toUpperCase();
 
 
-  const handleSave = () => {
-    toast.success('Profile updated successfully');
+const [formData, setFormData] = useState({
+  first_name: "",
+  last_name: "",
+  email: "",
+  role: "",
+  phone1: "",
+  phone2: "",
+  photo: "",
+  present_address: "",
+  permanent_address: "",
+  bio: "",
+  joining_date: "",
+});
+
+const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+const [isEditing, setIsEditing] = useState(false);
+
+useEffect(() => {
+  if (!user ) return;
+
+  const profile = user.profile; 
+
+    setFormData({
+      first_name: user.first_name || "",
+      last_name: user.last_name || "",
+      email: user.email || "",
+      role: user.role || "",
+      phone1: profile.phone1 || "",
+      phone2: profile.phone2 || "",
+      photo: profile.photo || "",
+      present_address: profile.present_address || "",
+      permanent_address: profile.permanent_address || "",
+      bio: profile.bio || "",
+      joining_date: profile.joining_date || "",
+
+    });
+  
+}, [user]);
+
+const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const { name, value } = e.target;
+  setFormData((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
+};
+
+const fileInputRef = useRef<HTMLInputElement>(null);
+
+
+  const handleSave = async () => {
+    try {
+      const data = new FormData();
+
+      data.append("first_name", formData.first_name);
+      data.append("last_name", formData.last_name);
+      data.append("email", formData.email);
+      data.append("phone1", formData.phone1 || "");
+      data.append("phone2", formData.phone2 || "");
+      data.append("bio", formData.bio || "");
+      data.append("joining_date", formData.joining_date || "");
+      data.append("present_address", formData.present_address || "");
+      data.append("permanent_address", formData.permanent_address || "");
+
+      if (selectedFile) {
+        data.append("photo", selectedFile);
+      }
+
+      await api.put("/auth/principal/update-profile/", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      await refreshUser();
+
+      toast.success("Profile updated successfully");
+    } catch (error: any) {
+      console.log(error.response?.data);
+      toast.error("Failed to update profile");
+    }
   };
+
+// ===== PASSWORD STATE =====
+const [passwordData, setPasswordData] = useState({
+  current_password: "",
+  new_password: "",
+  confirm_password: "",
+});
+
+const [showPassword, setShowPassword] = useState({
+  current: false,
+  new: false,
+  confirm: false,
+});
+
+const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const { name, value } = e.target;
+  setPasswordData((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
+};
+
+const handleUpdatePassword = async () => {
+  if (passwordData.new_password !== passwordData.confirm_password) {
+    toast.error("New passwords do not match");
+    return;
+  }
+
+  try {
+    await api.put("/auth/change-password/", {
+      current_password: passwordData.current_password,
+      new_password: passwordData.new_password,
+    });
+
+    toast.success("Password updated successfully");
+
+    // 🔥 CLEAR FORM AFTER SUCCESS
+    setPasswordData({
+      current_password: "",
+      new_password: "",
+      confirm_password: "",
+    });
+
+  } catch (error: any) {
+    toast.error("Failed to update password");
+  }
+};
+
+
 
   return (
     <>
@@ -40,18 +173,51 @@ const initials = displayName
         <Card className="lg:col-span-1">
           <CardContent className="pt-6 text-center">
             <div className="relative inline-block">
-              <Avatar className="w-32 h-32 mx-auto ring-4 ring-blue-100">
-                <AvatarImage src={user?.avatar} alt={displayName} />
-                <AvatarFallback className="text-4xl bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+
+              {/* Hidden File Input */}
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                hidden
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    setSelectedFile(e.target.files[0]);
+                  }
+                }}
+                disabled={!isEditing} // Disable file input when not editing
+              />
+
+              <Avatar
+                className="w-32 h-32 mx-auto ring-4 ring-blue-100 cursor-pointer"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <AvatarImage
+                  src={
+                    selectedFile
+                      ? URL.createObjectURL(selectedFile)
+                      : user.profile?.photo
+                        ? `http://127.0.0.1:8000${user.profile.photo}`
+                        : undefined
+                  }
+                  alt={displayName}
+                />
+
+                <AvatarFallback className="text-4xl font-semibold text-white bg-gradient-to-br from-blue-500 to-purple-600">
                   {initials}
                 </AvatarFallback>
               </Avatar>
+
+              {/* Camera Button */}
               <Button
+                type="button"
                 size="icon"
+                onClick={() => fileInputRef.current?.click()}
                 className="absolute bottom-0 right-0 rounded-full bg-blue-600 hover:bg-blue-700"
               >
                 <Camera className="w-4 h-4" />
               </Button>
+
             </div>
             
             <h2 className="mt-4 text-xl font-bold text-gray-900">{displayName}</h2>
@@ -64,15 +230,23 @@ const initials = displayName
               </div>
               <div className="flex items-center gap-3 text-sm text-gray-600">
                 <Phone className="w-4 h-4 text-green-500" />
-                +91 9876543210
+                {user.profile.phone1 || ""}
+              </div>
+              <div className="flex items-center gap-3 text-sm text-gray-600">
+                <Phone className="w-4 h-4 text-green-500" />
+                {user.profile.phone2 || ""}
               </div>
               <div className="flex items-center gap-3 text-sm text-gray-600">
                 <MapPin className="w-4 h-4 text-red-500" />
-                JNV Campus, District
+                {user.profile.present_address || ""}
               </div>
               <div className="flex items-center gap-3 text-sm text-gray-600">
                 <Calendar className="w-4 h-4 text-amber-500" />
-                Joined January 2020
+                Joined on {
+                  user.profile.joining_date
+                    ? new Date(user.profile.joining_date).toLocaleDateString()
+                    : ""
+                }
               </div>
             </div>
           </CardContent>
@@ -87,26 +261,43 @@ const initials = displayName
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label>Full Name</Label>
-                  <Input defaultValue={displayName} />
+                  <Label>First Name</Label>
+                  <Input name="first_name" value={formData.first_name} onChange={handleChange} disabled={!isEditing} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Last Name</Label>
+                  <Input name="last_name" value={formData.last_name} onChange={handleChange} disabled={!isEditing} />
                 </div>
                 <div className="space-y-2">
                   <Label>Email Address</Label>
-                  <Input defaultValue={user?.email} type="email" />
+                  <Input name="email" value={formData.email} onChange={handleChange} type="email" disabled={!isEditing} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Phone Number</Label>
-                  <Input defaultValue="9876543210" />
+                  <Label>Phone Number 1</Label>
+                  <Input name="phone1" value={formData.phone1 || ''} onChange={handleChange} disabled={!isEditing} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Phone Number 2</Label>
+                  <Input name="phone2" value={formData.phone2 || ''} onChange={handleChange} disabled={!isEditing} />
                 </div>
                 <div className="space-y-2">
                   <Label>Designation</Label>
-                  <Input defaultValue="Principal" disabled />
+                  <Input name="role" value={formData.role} disabled />
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Joining Date</Label>
+                <Input name="joining_date" value={formData.joining_date || ''} onChange={handleChange} type="date" disabled={!isEditing} />
               </div>
 
               <div className="space-y-2">
-                <Label>Address</Label>
-                <Input defaultValue="JNV Campus, Main Road, District - 123456" />
+                <Label>Present Address</Label>
+                <Input name="present_address" value={formData.present_address} onChange={handleChange} disabled={!isEditing} />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Permanent Address</Label>
+                <Input name="permanent_address" value={formData.permanent_address} onChange={handleChange} disabled={!isEditing} />
               </div>
 
               <div className="space-y-2">
@@ -114,17 +305,64 @@ const initials = displayName
                 <textarea
                   className="w-full min-h-[100px] px-3 py-2 rounded-md border border-input bg-background text-sm"
                   placeholder="Write something about yourself..."
-                  defaultValue="Experienced educator with over 20 years of experience in school administration."
+                  value={formData.bio}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, bio: e.target.value }))}
+                  disabled={!isEditing}
                 />
               </div>
 
               <div className="flex justify-end gap-3">
-                <Button variant="outline">Cancel</Button>
-                <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700 gap-2">
-                  <Save className="w-4 h-4" />
-                  Save Changes
-                </Button>
+
+                {!isEditing ? (
+                  <Button
+                    onClick={() => setIsEditing(true)}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    Update Profile
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditing(false);
+                        // Reset form back to original user data
+                        if (user) {
+                          const profile = user.profile;
+                          setFormData({
+                            first_name: user.first_name || "",
+                            last_name: user.last_name || "",
+                            email: user.email || "",
+                            role: user.role || "",
+                            phone1: profile.phone1 || "",
+                            phone2: profile.phone2 || "",
+                            photo: profile.photo || "",
+                            present_address: profile.present_address || "",
+                            permanent_address: profile.permanent_address || "",
+                            bio: profile.bio || "",
+                            joining_date: profile.joining_date || "",
+                          });
+                        }
+                      }}
+                    >
+                      Cancel
+                    </Button>
+
+                    <Button
+                      onClick={async () => {
+                        await handleSave();
+                        setIsEditing(false);
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 gap-2"
+                    >
+                      <Save className="w-4 h-4" />
+                      Save Changes
+                    </Button>
+                  </>
+                )}
+
               </div>
+
             </div>
           </CardContent>
         </Card>
@@ -137,23 +375,104 @@ const initials = displayName
               Security Settings
             </CardTitle>
           </CardHeader>
+
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
               <div className="space-y-2">
                 <Label>Current Password</Label>
-                <Input type="password" placeholder="Enter current password" />
+                <div className="relative">
+                  <Input
+                    type={showPassword.current ? "text" : "password"}
+                    name="current_password"
+                    value={passwordData.current_password}
+                    onChange={handlePasswordChange}
+                    placeholder="Enter current password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowPassword((prev) => ({
+                        ...prev,
+                        current: !prev.current,
+                      }))
+                    }
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                  >
+                    {showPassword.current ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
+                </div>
               </div>
+
               <div className="space-y-2">
                 <Label>New Password</Label>
-                <Input type="password" placeholder="Enter new password" />
+                <div className="relative">
+                  <Input
+                    type={showPassword.new ? "text" : "password"}
+                    name="new_password"
+                    value={passwordData.new_password}
+                    onChange={handlePasswordChange}
+                    placeholder="Enter new password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowPassword((prev) => ({
+                        ...prev,
+                        new: !prev.new,
+                      }))
+                    }
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                  >
+                    {showPassword.new ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
+                </div>
               </div>
+
               <div className="space-y-2">
                 <Label>Confirm Password</Label>
-                <Input type="password" placeholder="Confirm new password" />
+                <div className="relative">
+                  <Input
+                    type={showPassword.confirm ? "text" : "password"}
+                    name="confirm_password"
+                    value={passwordData.confirm_password}
+                    onChange={handlePasswordChange}
+                    placeholder="Confirm new password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowPassword((prev) => ({
+                        ...prev,
+                        confirm: !prev.confirm,
+                      }))
+                    }
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                  >
+                    {showPassword.confirm ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
+                </div>
               </div>
+
             </div>
+
             <div className="mt-6 flex justify-end">
-              <Button onClick={() => toast.success('Password updated successfully')} className="bg-blue-600 hover:bg-blue-700">
+              <Button
+                onClick={handleUpdatePassword}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
                 Update Password
               </Button>
             </div>

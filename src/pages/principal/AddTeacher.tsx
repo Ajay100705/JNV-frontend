@@ -9,12 +9,15 @@ interface TeacherForm {
   first_name: string;
   last_name: string;
   email: string;
-  phone: string;
+  phone1: string;
+  phone2: string;
   subject: string;
   qualification: string;
   date_of_joining: string;
   experience_years?: string;
   photo: File | null;
+  present_address?: string;
+  permanent_address?: string;
 }
 
 interface Props {
@@ -27,13 +30,16 @@ const AddTeacher: React.FC<Props> = ({ existingTeacher }) => {
     first_name: "",
     last_name: "",
     email: "",
-    phone: "",
+    phone1: "",
+    phone2: "",
     subject: "",
     qualification: "",
     experience_years: "",
     date_of_joining: "",
     photo: null,
     gender: "",
+    present_address: "",
+    permanent_address: "",
   });
 
   // prefill form if existing teacher data is provided
@@ -45,17 +51,20 @@ const AddTeacher: React.FC<Props> = ({ existingTeacher }) => {
         last_name: existingTeacher.last_name || "",
         email: existingTeacher.email || "",
         gender: existingTeacher.gender || "",
-        phone: existingTeacher.phone || "",
+        phone1: existingTeacher.phone1 || "",
+        phone2: existingTeacher.phone2 || "",
         subject: existingTeacher.subject || "",
         qualification: existingTeacher.qualification || "",
         experience_years: existingTeacher.experience_years || "",
         date_of_joining: existingTeacher.date_of_joining || "",
         photo: null,
+        present_address: existingTeacher.present_address || "",
+        permanent_address: existingTeacher.permanent_address || "",
       });
     }
   }, [existingTeacher]);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
@@ -73,10 +82,13 @@ const AddTeacher: React.FC<Props> = ({ existingTeacher }) => {
     data.append("last_name", form.last_name);
     data.append("email", form.email);
     data.append("gender", form.gender);
-    data.append("phone", form.phone || "");
+    data.append("phone1", form.phone1 || "");
+    data.append("phone2", form.phone2 || "");
     data.append("subject", form.subject || "");
     data.append("qualification", form.qualification || "");
     data.append("date_of_joining", form.date_of_joining);
+    data.append("present_address", form.present_address || "");
+    data.append("permanent_address", form.permanent_address || "");
 
     if (form.experience_years) {
       data.append("experience_years", String(Number(form.experience_years)));
@@ -110,12 +122,15 @@ const AddTeacher: React.FC<Props> = ({ existingTeacher }) => {
         username: "",
         gender: "",
         email: "",
-        phone: "",
+        phone1: "",
+        phone2: "",
         subject: "",
         qualification: "",
         experience_years: "",
         date_of_joining: "",
         photo: null,
+        present_address: "",
+        permanent_address: "",
       });
 
     } catch (error) {
@@ -181,14 +196,27 @@ const AddTeacher: React.FC<Props> = ({ existingTeacher }) => {
           required
         />
 
-        {/* Phone */}
+        {/* Phone1 */}
         <input
-          name="phone"
-          placeholder="Phone"
-          value={form.phone}
+          name="phone1"
+          placeholder="Phone1"
+          value={form.phone1}
           onChange={handleChange}
           className="input h-12"
         />
+
+        {/* Phone2 */}
+        <input
+          name="phone2"
+          placeholder="Phone2"
+          value={form.phone2}
+          onChange={handleChange}
+          className="input h-12"
+        />
+        
+
+
+      
 
         {/* Gender */}
         <select
@@ -222,20 +250,27 @@ const AddTeacher: React.FC<Props> = ({ existingTeacher }) => {
         />
 
         {/* Experience */}
-        <input
-          type="number"
-          name="experience_years"
-          placeholder="Experience Years"
-          value={form.experience_years}
-          onChange={handleChange}
-          className="input h-12"
-          min="0"
-          step="1"
-        />
+        <div className="relative">
+          <label className="absolute -top-2 left-3 bg-white px-1 text-xs font-semibold text-gray-700">
+            Experience (years)
+          </label>
+          
+          <input
+            type="number"
+            name="experience_years"
+            placeholder="Experience Years"
+            value={form.experience_years}
+            onChange={handleChange}
+            className="input h-12"
+            min="0"
+            step="1"
+          />
+        </div>
+
 
         {/* Joining Date */}
         <div className="relative">
-          <label className="absolute -top-2 left-3 bg-white px-1 text-xs text-gray-500">
+          <label className="absolute -top-2 left-3 bg-white px-1 text-xs font-semibold text-gray-700">
             Joining Date
           </label>
 
@@ -247,6 +282,24 @@ const AddTeacher: React.FC<Props> = ({ existingTeacher }) => {
             className="input h-12 w-full"
           />
         </div>
+
+        {/* Present Address */}
+        <textarea
+          name="present_address"
+          placeholder="Present Address"
+          value={form.present_address}
+          onChange={handleChange}
+          className="input h-24 col-span-2"
+        />
+
+        {/* Permanent Address */}
+        <textarea
+          name="permanent_address"
+          placeholder="Permanent Address"
+          value={form.permanent_address}
+          onChange={handleChange}
+          className="input h-24 col-span-2"
+        />
 
         {/* Submit */}
         <button type="submit" className="col-span-2 mt-4 bg-blue-600 text-white py-3 rounded-xl">

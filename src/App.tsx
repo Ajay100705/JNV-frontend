@@ -20,18 +20,19 @@ import { PrincipalProfile } from '@/pages/principal/Profile';
 import { HouseMasterDashboard } from '@/pages/housemaster/Dashboard';
 import { HouseMasterStudents } from '@/pages/housemaster/Students';
 import { HouseMasterProfile } from '@/pages/housemaster/Profile';
+import { AddHouseMaster } from '@/pages/principal/AddHouseMastere';
 
 // Teacher Pages
 import { TeacherDashboard } from '@/pages/teacher/Dashboard';
 import { TeacherStudents } from '@/pages/teacher/Students';
 import { TeacherProfile } from '@/pages/teacher/Profile';
-import  AddTeacher  from '@/pages/teacher/AddTeacher';
+import  AddTeacher  from '@/pages/principal/AddTeacher';
 
 // Parent Pages
 import { ParentDashboard } from '@/pages/parent/Dashboard';
 import { ParentChild } from '@/pages/parent/Child';
 import { ParentProfile } from '@/pages/parent/Profile';
-import AddStudent from '@/pages/parent/AddStudent';
+import AddStudent from '@/pages/principal/AddStudent';
 
 // Role-based redirect component
 const RoleBasedRedirect: React.FC = () => {
@@ -98,87 +99,59 @@ function App() {
             <Route path="profile" element={<PrincipalProfile />} />
             <Route path="add-teacher" element={<AddTeacher />} />
             <Route path="add-student" element={<AddStudent />} />
+            <Route path="add-house-master" element={<AddHouseMaster />} />
           </Route>
 
 
 
           {/* House Master Routes */}
           <Route
-            path="/housemaster/dashboard"
+            path="/housemaster"
             element={
               <ProtectedRoute allowedRoles={['housemaster']}>
-                <HouseMasterDashboard />
+                <DashboardLayout />
               </ProtectedRoute>
             }
-          />
-          <Route
-            path="/housemaster/students"
-            element={
-              <ProtectedRoute allowedRoles={['housemaster']}>
-                <HouseMasterStudents />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/housemaster/profile"
-            element={
-              <ProtectedRoute allowedRoles={['housemaster']}>
-                <HouseMasterProfile />
-              </ProtectedRoute>
-            }
-          />
+          >
+            <Route index element={<HouseMasterDashboard />} />
+
+            <Route path="dashboard" element={<HouseMasterDashboard />} />
+
+            <Route path="students" element={<HouseMasterStudents />} />
+            <Route path="profile" element={<HouseMasterProfile />} />
+          </Route>
 
           {/* Teacher Routes */}
           <Route
-            path="/teacher/dashboard"
+            path="/teacher"
             element={
               <ProtectedRoute allowedRoles={['teacher']}>
-                <TeacherDashboard />
+                <DashboardLayout />
               </ProtectedRoute>
             }
-          />
-          <Route
-            path="/teacher/students"
-            element={
-              <ProtectedRoute allowedRoles={['teacher']}>
-                <TeacherStudents />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/teacher/profile"
-            element={
-              <ProtectedRoute allowedRoles={['teacher']}>
-                <TeacherProfile />
-              </ProtectedRoute>
-            }
-          />
+          >
+            <Route index element={<TeacherDashboard />} />
+
+            <Route path="dashboard" element={<TeacherDashboard />} />
+            
+            <Route path="students" element={<TeacherStudents />} />
+            <Route path="profile" element={<TeacherProfile />} />
+          </Route>
 
           {/* Parent Routes */}
           <Route
-            path="/parent/dashboard"
+            path="/parent"
             element={
               <ProtectedRoute allowedRoles={['parent']}>
-                <ParentDashboard />
+                <DashboardLayout />
               </ProtectedRoute>
             }
-          />
-          <Route
-            path="/parent/child"
-            element={
-              <ProtectedRoute allowedRoles={['parent']}>
-                <ParentChild />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/parent/profile"
-            element={
-              <ProtectedRoute allowedRoles={['parent']}>
-                <ParentProfile />
-              </ProtectedRoute>
-            }
-          />
+          >
+            <Route index element={<ParentDashboard />} />
+            <Route path="dashboard" element={<ParentDashboard />} />
+            <Route path="child" element={<ParentChild />} />
+            <Route path="profile" element={<ParentProfile />} />
+          </Route>
 
           {/* Catch all - redirect to login */}
           <Route path="*" element={<Navigate to="/login" replace />} />

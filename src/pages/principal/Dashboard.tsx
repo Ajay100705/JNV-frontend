@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import { mockApi } from '@/services/api';
 import type { DashboardStats } from '@/types';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -27,7 +26,15 @@ import {
   Pie,
   Cell,
 } from 'recharts';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { cn } from '@/lib/utils';
+import { getDashboardStats, getHouseWiseStudents } from '@/services/coreService';
 
 const StatCard: React.FC<{
   title: string;
@@ -89,14 +96,26 @@ const COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'];
 
 export const PrincipalDashboard: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [houseWiseStudents, setHouseWiseStudents] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const HOUSE_COLORS: Record<string, string> = {
+    Aravali: "#2563eb",   // blue
+    Nilgiri: "#16a34a",   // green
+    Shivalik: "#dc2626",  // red
+    Udaygiri: "#eab308",  // yellow
+  };
+  const HOUSE_ORDER = ["Aravali", "Nilgiri", "Shivalik", "Udaygiri"];
+  const CATEGORY_ORDER = ["Senior", "Junior"];
+
+  
+
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await mockApi.getPrincipalStats();
-        setStats(response.data);
+        const response = await getDashboardStats();
+        setStats(response);
       } catch (error) {
         console.error('Failed to fetch stats:', error);
       } finally {
@@ -104,7 +123,19 @@ export const PrincipalDashboard: React.FC = () => {
       }
     };
 
+    const fetchHouseWiseStudents = async () => {
+    try {
+      const response = await getHouseWiseStudents();
+
+      setHouseWiseStudents(response);
+
+    } catch (error) {
+      console.error('Failed to fetch house-wise students:', error);
+    }
+  };
+
     fetchStats();
+    fetchHouseWiseStudents();
   }, []);
 
   if (isLoading) {
@@ -115,16 +146,60 @@ export const PrincipalDashboard: React.FC = () => {
     );
   }
 
-  const houseData = stats?.houseWiseStudents?.map(h => ({
-    name: h.house.replace(' House', ''),
-    students: h.count,
+  const normalizedData = houseWiseStudents?.houseWiseStudents.map(h => ({
+    house: h.house.trim(),
+    category: h.category.trim(),
+    student_count: h.student_count,
   })) || [];
 
-  const pieData = stats?.houseWiseStudents?.map((h, i) => ({
-    name: h.house.replace(' House', ''),
-    value: h.count,
-    color: COLORS[i % COLORS.length],
-  })) || [];
+  const sortedHouseWise = normalizedData.sort((a, b) => {
+    const houseDiff = HOUSE_ORDER.indexOf(a.house) - HOUSE_ORDER.indexOf(b.house);
+
+    if (houseDiff !== 0) return houseDiff;
+
+    return (
+      CATEGORY_ORDER.indexOf(a.category) -
+      CATEGORY_ORDER.indexOf(b.category)
+    );
+  });
+
+  
+    
+
+  // const sortedHouseWise =
+  // houseWiseStudents?.houseWiseStudents
+  //   ?.slice()
+  //   .sort((a, b) => {
+  //     const houseDiff =
+  //       HOUSE_ORDER.indexOf(a.house) - HOUSE_ORDER.indexOf(b.house);
+
+  //     if (houseDiff !== 0) return houseDiff;
+
+  //     return (
+  //       CATEGORY_ORDER.indexOf(a.category) -
+  //       CATEGORY_ORDER.indexOf(b.category)
+  //     );
+  //   }) || [];
+
+  const houseData = sortedHouseWise.map(h => {
+    const label = `${h.house} - ${h.category}`;
+
+    return {
+      name: label,
+      students: h.student_count,
+      color: HOUSE_COLORS[h.house] || "#6b7280",
+    };
+  }) || [];
+
+  const pieData = sortedHouseWise.map((h, i) => {
+    const label = `${h.house} - ${h.category}`;
+
+    return {
+      name: label,
+      value: h.student_count,
+      color: HOUSE_COLORS[h.house] || COLORS[i % COLORS.length],
+    };
+  }) || [];
 
   return (
     <>
@@ -139,10 +214,65 @@ export const PrincipalDashboard: React.FC = () => {
             <MoreHorizontal className="w-4 h-4" />
             More Options
           </Button>
-          <Button className="gap-2 bg-blue-600 hover:bg-blue-700">
-            <Plus className="w-4 h-4" />
-            Add New
-          </Button>
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="gap-2 bg-blue-600 hover:bg-blue-700">
+                <Plus className="w-4 h-4" />
+                Add New
+              </Button>
+            </DialogTrigger>
+
+            <DialogContent className="sm:max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Select Action</DialogTitle>
+              </DialogHeader>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-6">
+
+                {/* Add Teacher */}
+                <Card
+                  className="cursor-pointer hover:shadow-lg transition-all"
+                  onClick={() => navigate('/principal/add-teacher')}
+                >
+                  <CardContent className="flex flex-col items-center justify-center py-8">
+                    <div className="bg-blue-500 p-4 rounded-xl mb-3">
+                      <Users className="w-6 h-6 text-white" />
+                    </div>
+                    <p className="font-medium">Add Teacher</p>
+                  </CardContent>
+                </Card>
+
+                {/* Add Student */}
+                <Card
+                  className="cursor-pointer hover:shadow-lg transition-all"
+                  onClick={() => navigate('/principal/add-student')}
+                >
+                  <CardContent className="flex flex-col items-center justify-center py-8">
+                    <div className="bg-purple-500 p-4 rounded-xl mb-3">
+                      <GraduationCap className="w-6 h-6 text-white" />
+                    </div>
+                    <p className="font-medium">Add Student</p>
+                  </CardContent>
+                </Card>
+
+                {/* Add House Master */}
+                <Card
+                  className="cursor-pointer hover:shadow-lg transition-all"
+                  onClick={() => navigate('/principal/add-house-master')}
+                >
+                  <CardContent className="flex flex-col items-center justify-center py-8">
+                    <div className="bg-emerald-500 p-4 rounded-xl mb-3">
+                      <UserCircle className="w-6 h-6 text-white" />
+                    </div>
+                    <p className="font-medium">Add House Master</p>
+                  </CardContent>
+                </Card>
+
+              </div>
+            </DialogContent>
+          </Dialog>
+
         </div>
       </div>
 
@@ -150,39 +280,35 @@ export const PrincipalDashboard: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard
           title="Total Students"
-          value={stats?.totalStudents || 0}
+          value={stats?.total_students || 0}
           icon={GraduationCap}
-          trend={5.2}
           color="bg-blue-500"
           delay={0}
           onClick={() => navigate('/principal/students')}
         />
         <StatCard
           title="Total Teachers"
-          value={stats?.totalTeachers || 0}
+          value={stats?.total_teachers || 0}
           icon={Users}
-          trend={2.1}
           color="bg-purple-500"
           delay={100}
           onClick={() => navigate('/principal/teachers')}
         />
         <StatCard
           title="Total Parents"
-          value={stats?.totalParents || 0}
+          value={stats?.total_parents || 0}
           icon={UserCircle}
-          trend={3.8}
           color="bg-emerald-500"
           delay={200}
           onClick={() => navigate('/principal/parents')}
         />
         <StatCard
-          title="Total Houses"
-          value={stats?.totalHouses || 0}
+          title="Total House Masters"
+          value={stats?.total_housemasters || 0}
           icon={School}
-          trend={0}
           color="bg-amber-500"
           delay={300}
-          onClick={() => navigate('/principal/houses')}
+          onClick={() => navigate('/principal/housemasters')}
         />
       </div>
 
@@ -197,7 +323,7 @@ export const PrincipalDashboard: React.FC = () => {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={houseData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="name" stroke="#6b7280" fontSize={12} />
+                <XAxis dataKey="name" stroke="#6b7280" fontSize={12} angle={-30} textAnchor='end' interval={0} />
                 <YAxis stroke="#6b7280" fontSize={12} />
                 <Tooltip
                   contentStyle={{
@@ -206,7 +332,14 @@ export const PrincipalDashboard: React.FC = () => {
                     borderRadius: '8px',
                   }}
                 />
-                <Bar dataKey="students" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="students" radius={[4, 4, 0, 0]}>
+                  {houseData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.color}
+                    />
+                  ))}
+                </Bar> 
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -228,6 +361,7 @@ export const PrincipalDashboard: React.FC = () => {
                   outerRadius={100}
                   paddingAngle={5}
                   dataKey="value"
+                  label={(entry) => entry.name}
                 >
                   {pieData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
@@ -260,7 +394,7 @@ export const PrincipalDashboard: React.FC = () => {
           {[
             { label: 'Add Teacher', icon: Users, color: 'bg-blue-500', path: '/principal/add-teacher' },
             { label: 'Add Student', icon: GraduationCap, color: 'bg-purple-500', path: '/principal/add-student' },
-            { label: 'Add Parent', icon: UserCircle, color: 'bg-emerald-500' },
+            { label: 'Add House Master', icon: UserCircle, color: 'bg-emerald-500', path: '/principal/add-house-master' },
             { label: 'View Reports', icon: TrendingUp, color: 'bg-amber-500' },
           ].map((action, index) => (
             <Button
