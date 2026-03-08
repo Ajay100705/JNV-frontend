@@ -3,9 +3,10 @@ import type { ChangeEvent, FormEvent } from "react";
 import { addStudent, updateStudent } from "@/services/studentService";
 import ImageUploadPreview from "@/components/ImageUploadPreview";
 import type { Student } from "@/types";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 type Tab = "student" | "parent";
-
 
 interface Props {
   existingStudent?: Student | null;
@@ -41,6 +42,7 @@ interface StudentForm {
 
 export default function AddStudent({ existingStudent }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>("student");
+  const navigate = useNavigate();
 
   /* ---------- Static dropdown values ---------- */
 
@@ -117,11 +119,10 @@ export default function AddStudent({ existingStudent }: Props) {
   }, [existingStudent]);
 
   useEffect(() => {
-  if (form.class_name) {
-    handleClassChange(form.class_name);
-  }
-}, [form.class_name]);
-
+    if (form.class_name) {
+      handleClassChange(form.class_name);
+    }
+  }, [form.class_name]);
 
   /* ---------- Auto house category based on class ---------- */
 
@@ -139,13 +140,12 @@ export default function AddStudent({ existingStudent }: Props) {
   /* ---------- Input handlers ---------- */
 
   const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleStudentPhoto = (file: File) =>
-    setForm({ ...form, photo: file });
+  const handleStudentPhoto = (file: File) => setForm({ ...form, photo: file });
 
   const handleParentPhoto = (file: File) =>
     setForm({ ...form, parent_photo: file });
@@ -164,16 +164,17 @@ export default function AddStudent({ existingStudent }: Props) {
     try {
       if (existingStudent) {
         await updateStudent(existingStudent.id, data);
-        alert("Student updated");
+        toast.success("Student updated successfully");
       } else {
         await addStudent(data);
-        alert("Student added");
+        toast.success("Student added successfully");
       }
 
       window.dispatchEvent(new Event("student-added"));
+      setTimeout(() => navigate(-1), 800);
     } catch (err) {
       console.error(err);
-      alert("Failed");
+      toast.error("An error occurred while saving the student");
     }
   };
 
@@ -181,7 +182,6 @@ export default function AddStudent({ existingStudent }: Props) {
 
   return (
     <form onSubmit={submit} className="bg-white rounded-xl shadow">
-
       {/* TITLE */}
       <h2 className="text-2xl font-bold text-center py-4">
         {existingStudent ? "Edit Student" : "Add Student"}
@@ -207,64 +207,111 @@ export default function AddStudent({ existingStudent }: Props) {
 
       {/* FORM BODY */}
       <div className="p-6">
-
         {/* STUDENT TAB */}
         {activeTab === "student" && (
           <div className="grid grid-cols-2 gap-5">
-
             <div className="col-span-2 flex justify-center">
-              <ImageUploadPreview 
+              <ImageUploadPreview
                 previewUrl={existingStudent?.photo}
-                onFileSelect={handleStudentPhoto} 
+                onFileSelect={handleStudentPhoto}
               />
             </div>
 
-            <input name="first_name" placeholder="First Name" className="input h-12" onChange={handleChange} value={form.first_name} />
-            <input name="last_name" placeholder="Last Name" className="input h-12" onChange={handleChange} value={form.last_name} />
+            <input
+              name="first_name"
+              placeholder="First Name"
+              className="input h-12"
+              onChange={handleChange}
+              value={form.first_name}
+            />
+            <input
+              name="last_name"
+              placeholder="Last Name"
+              className="input h-12"
+              onChange={handleChange}
+              value={form.last_name}
+            />
 
-            <input name="username" placeholder="Username" className="input h-12" onChange={handleChange} value={form.username} />
+            <input
+              name="username"
+              placeholder="Username"
+              className="input h-12"
+              onChange={handleChange}
+              value={form.username}
+            />
 
-            <input name="email" placeholder="Email" className="input h-12" onChange={handleChange} value={form.email} />
+            <input
+              name="email"
+              placeholder="Email"
+              className="input h-12"
+              onChange={handleChange}
+              value={form.email}
+            />
 
-            <select name="gender" value={form.gender} onChange={handleChange} className="input h-12">
-              <option value="" disabled>Select Gender</option>
+            <select
+              name="gender"
+              value={form.gender}
+              onChange={handleChange}
+              className="input h-12"
+            >
+              <option value="" disabled>
+                Select Gender
+              </option>
               <option value="">Gender</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
             </select>
 
-            <select 
+            <select
               name="class_name"
-              value={form.class_name} 
+              value={form.class_name}
               onChange={(e) => handleClassChange(e.target.value)}
               className="input h-12"
               required
             >
-              <option value="" disabled>Select Class</option>
-              {classes.map(c => <option key={c}>{c}</option>)}
+              <option value="" disabled>
+                Select Class
+              </option>
+              {classes.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
             </select>
 
-            <select 
-              name="section" 
-              value={form.section} onChange={handleChange} 
+            <select
+              name="section"
+              value={form.section}
+              onChange={handleChange}
               className="input h-12"
               required
             >
-              <option value="" disabled>Select Section</option>
-              {sections.map(s => <option key={s}>{s}</option>)}
+              <option value="" disabled>
+                Select Section
+              </option>
+              {sections.map((s) => (
+                <option key={s}>{s}</option>
+              ))}
             </select>
 
-            <select 
-              name="house_name" 
-              value={form.house_name} onChange={handleChange} 
+            <select
+              name="house_name"
+              value={form.house_name}
+              onChange={handleChange}
               className="input h-12"
               required
             >
-            <option value="" disabled>Select House</option>
-            {houses.map(h => <option key={h}>{h}</option>)}
-          </select>
+              <option value="" disabled>
+                Select House
+              </option>
+              {houses.map((h) => (
+                <option key={h}>{h}</option>
+              ))}
+            </select>
 
-            <input readOnly className="input h-12 bg-gray-100" value={form.house_category} />
+            <input
+              readOnly
+              className="input h-12 bg-gray-100"
+              value={form.house_category}
+            />
 
             <div className="relative">
               <label className="absolute -top-2 left-3 bg-white px-1 text-xs text-gray-500">
@@ -294,8 +341,11 @@ export default function AddStudent({ existingStudent }: Props) {
               />
             </div>
 
-
-            <button type="button" onClick={() => setActiveTab("parent")} className="col-span-2 bg-blue-600 text-white py-3 rounded-xl">
+            <button
+              type="button"
+              onClick={() => setActiveTab("parent")}
+              className="col-span-2 bg-blue-600 text-white py-3 rounded-xl"
+            >
               Next →
             </button>
           </div>
@@ -304,30 +354,78 @@ export default function AddStudent({ existingStudent }: Props) {
         {/* PARENT TAB */}
         {activeTab === "parent" && (
           <div className="grid grid-cols-2 gap-5">
-
             <div className="col-span-2 flex justify-center">
-              <ImageUploadPreview 
-                onFileSelect={handleParentPhoto} 
+              <ImageUploadPreview
+                onFileSelect={handleParentPhoto}
                 previewUrl={existingStudent?.parent?.photo}
               />
             </div>
 
-            <input name="parent_first_name" placeholder="First Name" className="input h-12" onChange={handleChange} value={form.parent_first_name} />
-            <input name="parent_last_name" placeholder="Last Name" className="input h-12" onChange={handleChange} value={form.parent_last_name} />
+            <input
+              name="parent_first_name"
+              placeholder="First Name"
+              className="input h-12"
+              onChange={handleChange}
+              value={form.parent_first_name}
+            />
+            <input
+              name="parent_last_name"
+              placeholder="Last Name"
+              className="input h-12"
+              onChange={handleChange}
+              value={form.parent_last_name}
+            />
 
-            <input name="parent_phone1" placeholder="Phone" className="input h-12" onChange={handleChange} value={form.parent_phone1} />
-            <input name="parent_email" placeholder="Email" className="input h-12" onChange={handleChange} value={form.parent_email || ""} />
+            <input
+              name="parent_phone1"
+              placeholder="Phone"
+              className="input h-12"
+              onChange={handleChange}
+              value={form.parent_phone1}
+            />
+            <input
+              name="parent_phone2"
+              placeholder="Alternate Phone"
+              className="input h-12"
+              onChange={handleChange}
+              value={form.parent_phone2}
+            />
+            <input
+              name="parent_email"
+              placeholder="Email"
+              className="input h-12"
+              onChange={handleChange}
+              value={form.parent_email || ""}
+            />
 
-
-            <textarea name="present_address" placeholder="Present Address" className="input col-span-2" onChange={handleChange} value={form.present_address || ""} />
-            <textarea name="permanent_address" placeholder="Permanent Address" className="input col-span-2" onChange={handleChange} value={form.permanent_address || ""} />
+            <textarea
+              name="present_address"
+              placeholder="Present Address"
+              className="input col-span-2"
+              onChange={handleChange}
+              value={form.present_address || ""}
+            />
+            <textarea
+              name="permanent_address"
+              placeholder="Permanent Address"
+              className="input col-span-2"
+              onChange={handleChange}
+              value={form.permanent_address || ""}
+            />
 
             <div className="col-span-2 flex gap-3">
-              <button type="button" onClick={() => setActiveTab("student")} className="flex-1 border py-3 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setActiveTab("student")}
+                className="flex-1 border py-3 rounded-xl"
+              >
                 ← Back
               </button>
 
-              <button type="submit" className="flex-1 bg-blue-600 text-white py-3 rounded-xl">
+              <button
+                type="submit"
+                className="flex-1 bg-blue-600 text-white py-3 rounded-xl"
+              >
                 Save Student
               </button>
             </div>

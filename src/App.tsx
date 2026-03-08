@@ -1,38 +1,63 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'sonner';
-import { AuthProvider, useAuth, getDashboardRoute } from '@/contexts/AuthContext';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { DashboardLayout } from './components/layout/DashboardLayout';
+import React from "react";
+import { RoleGuard } from "@/components/RoleGuard";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { Toaster } from "sonner";
+import {
+  AuthProvider,
+  useAuth,
+  getDashboardRoute,
+} from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { DashboardLayout } from "./components/layout/DashboardLayout";
 
 // Pages
-import { Login } from '@/pages/Login';
+import { Login } from "@/pages/Login";
 
 // Principal Pages
-import { PrincipalDashboard } from '@/pages/principal/Dashboard';
-import { PrincipalTeachers } from '@/pages/principal/Teachers';
-import { PrincipalHouseMasters } from '@/pages/principal/HouseMasters';
-import { PrincipalParents } from '@/pages/principal/Parents';
-import { PrincipalStudents } from '@/pages/principal/Students';
-import { PrincipalProfile } from '@/pages/principal/Profile';
+import { PrincipalDashboard } from "@/pages/principal/Dashboard";
+import { PrincipalTeachers } from "@/pages/principal/Teachers";
+import { PrincipalHouseMasters } from "@/pages/principal/HouseMasters";
+import { PrincipalParents } from "@/pages/principal/Parents";
+import { PrincipalStudents } from "@/pages/principal/Students";
+import { PrincipalProfile } from "@/pages/principal/Profile";
+import { AddHouseMaster } from "@/pages/principal/AddHouseMastere";
+import AddTeacher from "@/pages/principal/AddTeacher";
+import { PrincipalClassTeachers } from "@/pages/principal/ClassTeachers";
+import { AddClassTeacher } from "@/pages/principal/AddClassTeacher";
+import AddStudent from "@/pages/principal/AddStudent";
+import TimetableManager from "@/pages/principal/TimetableManager";
+import AddTimetable from "@/pages/principal/AddTimetable";
+import CreateExam from "./pages/principal/CreateExam";
+import AssignClassSubjects from "./pages/principal/AssignClassSubjects";
+import AssignExamSubjects from "./pages/principal/AssignExamSubjects";
+import SubjectManagement from "@/pages/principal/SubjectManagement";
 
 // House Master Pages
-import { HouseMasterDashboard } from '@/pages/housemaster/Dashboard';
-import { HouseMasterStudents } from '@/pages/housemaster/Students';
-import { HouseMasterProfile } from '@/pages/housemaster/Profile';
-import { AddHouseMaster } from '@/pages/principal/AddHouseMastere';
+import { HouseMasterDashboard } from "@/pages/housemaster/Dashboard";
+import { HouseMasterStudents } from "@/pages/housemaster/Students";
+import TakeHouseAttendance from "@/pages/housemaster/TakeHouseAttendance";
+import { HouseAttendance } from "@/pages/housemaster/HouseAttendance";
 
 // Teacher Pages
-import { TeacherDashboard } from '@/pages/teacher/Dashboard';
-import { TeacherStudents } from '@/pages/teacher/Students';
-import { TeacherProfile } from '@/pages/teacher/Profile';
-import  AddTeacher  from '@/pages/principal/AddTeacher';
+import { TeacherDashboard } from "@/pages/teacher/Dashboard";
+import { TeacherStudents } from "@/pages/teacher/Students";
+import { TeacherProfile } from "@/pages/teacher/Profile";
+import { TeacherTotalStudents } from "@/pages/teacher/Totalstudent";
+import TakeAttendance from "@/pages/teacher/TakeAttendance";
+import TeacherAttendance from "@/pages/teacher/TeacherAttendance";
+import EnterMarks from "@/pages/teacher/EnterMarks";
+import MarksManager from "@/pages/teacher/MarksManager";
 
 // Parent Pages
-import { ParentDashboard } from '@/pages/parent/Dashboard';
-import { ParentChild } from '@/pages/parent/Child';
-import { ParentProfile } from '@/pages/parent/Profile';
-import AddStudent from '@/pages/principal/AddStudent';
+import { ParentDashboard } from "@/pages/parent/Dashboard";
+import { ParentChild } from "@/pages/parent/Child";
+import { ParentProfile } from "@/pages/parent/Profile";
+import type { UserRole } from "./types";
 
 // Role-based redirect component
 const RoleBasedRedirect: React.FC = () => {
@@ -53,30 +78,29 @@ const RoleBasedRedirect: React.FC = () => {
     return <Navigate to="/login" replace />;
   }
 
-  return <Navigate to={getDashboardRoute(user!.role)} replace />;
+  return <Navigate to={getDashboardRoute(user!.role as UserRole)} replace />;
 };
 
 function App() {
   return (
     <AuthProvider>
       <Router>
-        <Toaster 
-          position="top-right" 
-          richColors 
+        <Toaster
+          position="top-right"
+          richColors
           closeButton
           toastOptions={{
             style: {
-              fontFamily: 'inherit',
+              fontFamily: "inherit",
             },
           }}
         />
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
-          
+
           {/* Root redirect based on role */}
           <Route path="/" element={<RoleBasedRedirect />} />
-
 
           {/* Principal Routes */}
 
@@ -91,7 +115,7 @@ function App() {
             <Route index element={<PrincipalDashboard />} />
 
             <Route path="dashboard" element={<PrincipalDashboard />} />
-            
+
             <Route path="teachers" element={<PrincipalTeachers />} />
             <Route path="housemasters" element={<PrincipalHouseMasters />} />
             <Route path="parents" element={<PrincipalParents />} />
@@ -100,49 +124,118 @@ function App() {
             <Route path="add-teacher" element={<AddTeacher />} />
             <Route path="add-student" element={<AddStudent />} />
             <Route path="add-house-master" element={<AddHouseMaster />} />
-          </Route>
-
-
-
-          {/* House Master Routes */}
-          <Route
-            path="/housemaster"
-            element={
-              <ProtectedRoute allowedRoles={['housemaster']}>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<HouseMasterDashboard />} />
-
-            <Route path="dashboard" element={<HouseMasterDashboard />} />
-
-            <Route path="students" element={<HouseMasterStudents />} />
-            <Route path="profile" element={<HouseMasterProfile />} />
+            <Route path="class-teachers" element={<PrincipalClassTeachers />} />
+            <Route path="add-class-teacher" element={<AddClassTeacher />} />
+            <Route path="timetable-manager" element={<TimetableManager />} />
+            <Route path="add-timetable" element={<AddTimetable />} />
+            <Route path="create-exam" element={<CreateExam />} />
+            <Route path="class-subjects" element={<AssignClassSubjects />} />
+            <Route path="exam-subjects" element={<AssignExamSubjects />} />
+            <Route path="subject-management" element={<SubjectManagement />} />
           </Route>
 
           {/* Teacher Routes */}
           <Route
             path="/teacher"
             element={
-              <ProtectedRoute allowedRoles={['teacher']}>
+              <ProtectedRoute allowedRoles={["teacher"]}>
                 <DashboardLayout />
               </ProtectedRoute>
             }
           >
             <Route index element={<TeacherDashboard />} />
-
             <Route path="dashboard" element={<TeacherDashboard />} />
-            
-            <Route path="students" element={<TeacherStudents />} />
+
+            {/* General Teacher Pages */}
+            <Route path="attendance" element={<TeacherAttendance />} />
+            <Route path="total-students" element={<TeacherTotalStudents />} />
             <Route path="profile" element={<TeacherProfile />} />
+
+            {/* Class Teacher Pages */}
+            <Route
+              path="students"
+              element={
+                <RoleGuard check={(u) => u.profile?.is_class_teacher}>
+                  <TeacherStudents />
+                </RoleGuard>
+              }
+            />
+
+            <Route
+              path="marks"
+              element={
+                <RoleGuard check={(u) => u.profile?.is_class_teacher}>
+                  <TeacherDashboard />
+                </RoleGuard>
+              }
+            />
+
+            <Route
+              path="classes/enter-marks/:examId/:subjectId"
+              element={
+                <RoleGuard check={(u) => u.profile?.is_class_teacher}>
+                  <EnterMarks />
+                </RoleGuard>
+              }
+            />
+
+            <Route
+              path="marks-manager"
+              element={
+                <RoleGuard check={(u) => u.profile?.is_class_teacher}>
+                  <MarksManager />
+                </RoleGuard>
+              }
+            />
+
+            {/* House Master Pages */}
+            <Route
+              path="house-dashboard"
+              element={
+                <RoleGuard check={(u) => u.profile?.is_house_master}>
+                  <HouseMasterDashboard />
+                </RoleGuard>
+              }
+            />
+
+            <Route
+              path="house-students"
+              element={
+                <RoleGuard check={(u) => u.profile?.is_house_master}>
+                  <HouseMasterStudents />
+                </RoleGuard>
+              }
+            />
+
+            <Route
+              path="house-attendance"
+              element={
+                <RoleGuard check={(u) => u.profile?.is_house_master}>
+                  <HouseAttendance />
+                </RoleGuard>
+              }
+            />
+
+            <Route
+              path="take-house-attendance"
+              element={
+                <RoleGuard check={(u) => u.profile?.is_house_master}>
+                  <TakeHouseAttendance />
+                </RoleGuard>
+              }
+            />
+
+            <Route
+              path="take-attendance/:timetableId"
+              element={<TakeAttendance />}
+            />
           </Route>
 
           {/* Parent Routes */}
           <Route
             path="/parent"
             element={
-              <ProtectedRoute allowedRoles={['parent']}>
+              <ProtectedRoute allowedRoles={["parent"]}>
                 <DashboardLayout />
               </ProtectedRoute>
             }

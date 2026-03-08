@@ -206,8 +206,8 @@ export const PrincipalTeachers: React.FC = () => {
                 <TableHead>Name</TableHead>
                 <TableHead>Subject</TableHead>
                 <TableHead>Phone1</TableHead>
-                <TableHead>Subject</TableHead>
                 <TableHead>Qualification</TableHead>
+                <TableHead>Joing Date</TableHead>
                 <TableHead />
               </TableRow>
             </TableHeader>
@@ -236,28 +236,30 @@ export const PrincipalTeachers: React.FC = () => {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <BookOpen size={14} className="text-gray-500" />
-                      {teacher.subject}
+                      {teacher.subject || "N/A"}
                     </div>
                   </TableCell>
 
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Phone size={14} className="text-gray-500" />
-                      {teacher.phone1}
+                      {teacher.phone1 || "N/A"}
                     </div>
                     </TableCell>
 
-                    <TableCell>
+                    
+
+                  <TableCell>
                     <div className="flex items-center gap-2">
-                      <Phone size={14} className="text-gray-500" />
-                      {teacher.subject}
+                      <GraduationCap size={14} className="text-gray-500" />
+                      {teacher.qualification || "N/A"}
                     </div>
                     </TableCell>
 
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <GraduationCap size={14} className="text-gray-500" />
-                      {teacher.qualification}
+                      {/* <Phone size={14} className="text-gray-500" /> */}
+                      {teacher.date_of_joining || "N/A"}
                     </div>
                     </TableCell>
 

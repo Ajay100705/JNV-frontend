@@ -1,6 +1,6 @@
 // ================= USER ROLES =================
 
-export type UserRole = "principal" | "housemaster" | "teacher" | "parent" | "student";
+export type UserRole = "principal" | "teacher" | "parent" | "student";
 
 
 // ================= BASE USER =================
@@ -31,9 +31,13 @@ export interface TeacherProfile {
   phone1?: string;
   phone2?: string;
   subject?: string;
+  house_name?: string;
+  is_class_teacher?: boolean;
+  is_house_master?: boolean;
+  class_teacher_of?: string; 
   qualification?: string;
-  experience_years?: number;
-  date_of_joining?: string;
+  experience_years?: string;
+  date_of_joining?: string ;
   present_address?: string;
   permanent_address?: string;
   photo?: string;
@@ -86,6 +90,73 @@ export interface StudentProfile {
   };
 }
 
+export interface ClassTeacherStudent {
+  id: number;
+  name: string;
+  admission_number: string;
+  gender: string;
+  photo?: string;
+
+  house_name: string;
+  house_category: string;
+
+  classroom: string;
+
+  overall_attendance: number;
+  total_present: number;
+  total_classes: number;
+
+  parent_name?: string;
+  parent_phone1?: string;
+  parent_phone2?: string;
+  parent_email?: string;
+  parent_photo?: string;
+  parent_job?: string;
+  parent_present_address?: string;
+  parent_permanent_address?: string;
+
+}
+
+export interface TeacherAllStudent {
+  id: number;
+  name: string;
+  admission_number: string;
+  gender: string;
+  photo?: string;
+
+  house_name: string;
+  house_category: string;
+
+  classroom: string;
+
+  parent_photo?: string;
+  parent_name?: string;
+  parent_phone1?: string;
+  parent_phone2?: string;
+  parent_email?: string;
+  parent_job?: string;
+  parent_present_address?: string;
+  parent_permanent_address?: string;
+
+  total_classes: number
+  present: number
+  absent: number
+  leave: number
+  attendance_percentage: number
+
+}
+
+export interface ClassTeacher {
+  id: number;
+  teacher_id: number;
+  teacher_name: string;
+  classroom_id: number;
+  classroom_name: string;
+  academic_year: string;
+  teacher_photo?: string | null;
+  teacher_phone?: string | null;
+}
+
 
 // ================= ROLE-BASED USER TYPES =================
 
@@ -109,10 +180,10 @@ export interface StudentUser extends BaseUser {
   profile: StudentProfile;
 }
 
-export interface HouseMasterUser extends BaseUser {
-  role: "housemaster";
-  profile: TeacherProfile; // assuming housemaster is teacher-based
-}
+// export interface HouseMasterUser extends BaseUser {
+//   role: "housemaster";
+//   profile: TeacherProfile; // assuming housemaster is teacher-based
+// }
 
 
 // ================= FINAL USER TYPE =================
@@ -122,7 +193,7 @@ export type User =
   | TeacherUser
   | ParentUser
   | StudentUser
-  | HouseMasterUser;
+  // | HouseMasterUser;
 
 
 // ================= AUTH CONTEXT =================
@@ -164,8 +235,8 @@ export interface Teacher {
   phone2?: string;
   subject?: string;
   qualification?: string;
-  experience_years?: number;
-  date_of_joining?: string;
+  experience_years?: string;
+  date_of_joining?: string ;
   present_address?: string;
   permanent_address?: string;
   photo?: string;
@@ -285,192 +356,4 @@ export interface Parent {
   children?: Child[];
 }
 
-
-// // User Roles
-// export type UserRole = "principal" | "housemaster" | "teacher" | "parent";
-
-// // ================= AUTH CONTEXT =================
-
-// export interface AuthContextType {
-//   user: User | null;
-//   isAuthenticated: boolean;
-//   isLoading: boolean;
-//   login: (username: string, password: string) => Promise<void>;
-//   logout: () => void;
-//   refreshUser: () => Promise<void>;
-// }
-// export interface PrincipalProfile {
-//   phone1?: string;
-//   phone2?: string;
-//   photo?: string;
-//   present_address?: string;
-//   permanent_address?: string;
-//   bio?: string;
-//   joining_date?: string;
-// }
-
-// export interface TeacherProfile {
-//   phone?: string;
-//   subject?: string;
-//   qualification?: string;
-//   experience_years?: number;
-//   date_of_joining?: string;
-//   photo?: string;
-// }
-
-// export interface StudentProfile {
-//   date_of_birth?: string;
-
-// export interface User {
-//   id: number;
-//   username: string;
-//   email: string;
-//   first_name: string;
-//   last_name: string;
-//   role: UserRole;
-//   gender?: string;
-//   profile?: PrincipalProfile | TeacherProfile | StudentProfile | null;
-// }
-
-// // ================= STUDENT =================
-
-// export interface Student {
-//   id: number;
-//   admission_date?: string;
-
-//   username?: string;
-//   first_name: string;
-//   last_name: string;
-//   photo?: string;
-
-//   date_of_birth?: string;
-//   email?: string;
-//   gender?: string;
-
-//   classroom?: {
-//     id: number;
-//     class_name: string;
-//     section: string;
-//   };
-
-//   house?: {
-//     id: number;
-//     house_name: string;
-//     house_category: string;
-//   };
-
-//   parent?: {
-//     id: number;
-//     first_name?: string;
-//     last_name?: string;
-//     phone1?: string;
-//     phone2?: string;
-//     email?: string;
-//     job?: string;
-//     present_address?: string;
-//     permanent_address?: string;
-//     photo?: string;
-//   };
-// }
-
-// // ================= TEACHER =================
-
-// export interface Teacher {
-//   id: number;
-//   first_name: string;
-//   last_name: string;
-//   email?: string;
-//   gender?: string;
-//   phone?: string;
-//   subject?: string;
-//   qualification?: string;
-//   experience_years?: number;
-//   date_of_joining?: string;
-//   photo?: string;
-// }
-
-// // ================= HOUSE MASTER =================
-
-// export interface HouseMaster {
-//   id: number;
-//   teacher: number;
-//   house: number;
-
-//   teacher_detail: {
-    
-//       first_name: string;
-//       last_name: string;
-//       email: string;
-    
-//     photo?: string;
-//   };
-
-//   house_detail: {
-//     house_name: string;
-//     house_category: string;
-//   };
-
-//   is_house_master: boolean;
-// }
-// // ================= CHILD =================
-// export interface Child {
-//   id: number;
-//   first_name: string;
-//   last_name: string;
-//   admission_number: string;
-//   class_name?: string;
-//   section?: string;
-//   house_name?: string;
-//   house_category?: string;
-//   photo?: string;
-// }
-
-
-// // ================= PARENT =================
-
-// export interface Parent {
-//   id: number;
-//   first_name: string;
-//   last_name: string;
-//   email?: string;
-//   phone1?: string;
-//   phone2?: string;
-//   job?: string;
-//   photo?: string;
-//   present_address?: string;
-//   permanent_address?: string;
-//   children?: Child[];
-// }
-
-// // ================= ATTENDANCE =================
-
-// export interface Attendance {
-//   student: number;
-//   date: string;
-//   status: "present" | "absent" | "leave";
-// }
-
-// // ================= MARKS =================
-
-// export interface Marks {
-//   student: number;
-//   subject: string;
-//   exam_type: string;
-//   marks: number;
-//   total_marks: number;
-// }
-
-// // ================= PRINCIPAL DASHBOARD STATS =================
-
-// export interface DashboardStats {
-//   total_students: number;
-//   total_teachers: number;
-//   total_housemasters: number;
-//   total_parents: number;
-//   houseWiseStudents: {
-//     house: string;
-//     category: string;
-//     student_count: number;
-//   }[];
-// }
 

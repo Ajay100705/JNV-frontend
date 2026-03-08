@@ -21,7 +21,23 @@ export const updateHouseMaster = (id: number, data: {
   house: number;
 }) => api.put(`/houses/house-masters/${id}/`, data);
 
+// get house master dashboard stats
+export const getHouseMasterStats = async () => {
+  const res = await api.get("/houses/house-dashboard/");
+  return res.data;
+};
 
+// get students of a house
+export const getHouseStudents = async () => {
+  const res = await api.get("/houses/house-students/");
+  return res.data;
+};
+
+//  today leave students
+export const getTodayLeaveStudents = async () => {
+  const res = await api.get("/houses/today-leave-students/");
+  return res.data;
+};
 
 
 

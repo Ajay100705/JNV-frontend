@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 // import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
-import { mockApi } from '@/services/api';
-import { useAuth } from '@/contexts/AuthContext';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  getHouseMasterStats,
+  getTodayLeaveStudents,
+} from "@/services/houseService";
+// import { useAuth } from "@/contexts/AuthContext";
 import {
   Users,
   Calendar,
@@ -13,17 +16,33 @@ import {
   TrendingUp,
   Home,
   ArrowRight,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+// import { Action } from "@radix-ui/react-alert-dialog";
 
 interface HouseMasterStats {
   totalStudents: number;
   attendancePercentage: number;
   presentToday: number;
-  absentToday: number;
+  leaveToday: number;
   house: string;
 }
+
+// interface QuickAction {
+//   label: string;
+//   icon: React.ElementType;
+//   color: string;
+//   path?: string;
+// }
 
 const StatCard: React.FC<{
   title: string;
@@ -43,15 +62,19 @@ const StatCard: React.FC<{
   return (
     <Card
       className={cn(
-        'relative overflow-hidden transition-all duration-500 transform',
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        "relative overflow-hidden transition-all duration-500 transform",
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4",
       )}
     >
-      <div className={`absolute top-0 right-0 w-32 h-32 ${color} opacity-10 rounded-full -translate-y-1/2 translate-x-1/2`} />
+      <div
+        className={`absolute top-0 right-0 w-32 h-32 ${color} opacity-10 rounded-full -translate-y-1/2 translate-x-1/2`}
+      />
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-gray-600">{title}</CardTitle>
+        <CardTitle className="text-sm font-medium text-gray-600">
+          {title}
+        </CardTitle>
         <div className={`p-2 rounded-lg ${color} bg-opacity-20`}>
-          <Icon className={`w-5 h-5 ${color.replace('bg-', 'text-')}`} />
+          <Icon className={`w-5 h-5 ${color.replace("bg-", "text-")}`} />
         </div>
       </CardHeader>
       <CardContent>
@@ -63,40 +86,36 @@ const StatCard: React.FC<{
 };
 
 export const HouseMasterDashboard: React.FC = () => {
-  const { user } = useAuth();
+  // const { user } = useAuth();
   const [stats, setStats] = useState<HouseMasterStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
+  const [leaveStudents, setLeaveStudents] = useState<any[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await mockApi.getHouseMasterStats(user?.house || 'Shivaji House');
-        setStats(response.data);
+        const statsData = await getHouseMasterStats();
+        setStats(statsData);
+
+        const leave = await getTodayLeaveStudents();
+        setLeaveStudents(leave);
       } catch (error) {
-        console.error('Failed to fetch stats:', error);
+        console.error("Failed to fetch stats:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchStats();
-  }, [user?.house]);
-
-  const recentAttendance = [
-    { name: 'Rahul Singh', status: 'present', time: '08:30 AM' },
-    { name: 'Priya Sharma', status: 'absent', time: '-' },
-    { name: 'Amit Kumar', status: 'present', time: '08:45 AM' },
-    { name: 'Neha Patel', status: 'present', time: '08:15 AM' },
-    { name: 'Rohit Verma', status: 'leave', time: '-' },
-  ];
+  }, []);
 
   if (isLoading) {
     return (
-      
-        <div className="flex items-center justify-center h-[60vh]">
-          <Spinner className="w-12 h-12 text-blue-600" />
-        </div>
-      
+      <div className="flex items-center justify-center h-[60vh]">
+        <Spinner className="w-12 h-12 text-blue-600" />
+      </div>
     );
   }
 
@@ -107,13 +126,17 @@ export const HouseMasterDashboard: React.FC = () => {
         <div>
           <div className="flex items-center gap-3">
             <Home className="w-8 h-8 text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-900">{user?.house} Dashboard</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              {stats?.house} Dashboard
+            </h1>
           </div>
-          <p className="text-gray-500 mt-1">Manage your house students and attendance</p>
+          <p className="text-gray-500 mt-1">
+            Manage your house students and attendance
+          </p>
         </div>
-        <Button 
+        <Button
           className="gap-2 bg-blue-600 hover:bg-blue-700"
-          onClick={() => toast.success('Attendance marked for today')}
+          onClick={() => navigate("/teacher/take-house-attendance")}
         >
           <Calendar className="w-4 h-4" />
           Mark Attendance
@@ -134,7 +157,7 @@ export const HouseMasterDashboard: React.FC = () => {
           title="Attendance Rate"
           value={`${stats?.attendancePercentage || 0}%`}
           icon={TrendingUp}
-          subtitle="This month"
+          subtitle="Today's attendance"
           color="bg-emerald-500"
           delay={100}
         />
@@ -147,10 +170,10 @@ export const HouseMasterDashboard: React.FC = () => {
           delay={200}
         />
         <StatCard
-          title="Absent Today"
-          value={stats?.absentToday || 0}
+          title="Leave"
+          value={stats?.leaveToday || 0}
           icon={XCircle}
-          subtitle="Students absent"
+          subtitle="Students on leave"
           color="bg-red-500"
           delay={300}
         />
@@ -160,31 +183,47 @@ export const HouseMasterDashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-lg">Today's Attendance</CardTitle>
-            <Button variant="ghost" size="sm" className="gap-1">
+            <CardTitle className="text-lg">Today's Leave Students</CardTitle>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1"
+              onClick={() => setIsDialogOpen(true)}
+            >
               View All <ArrowRight className="w-4 h-4" />
             </Button>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {recentAttendance.map((item, index) => (
+              {leaveStudents.slice(0, 5).map((item, index) => (
                 <div
                   key={index}
                   className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      item.status === 'present' ? 'bg-green-100 text-green-600' :
-                      item.status === 'absent' ? 'bg-red-100 text-red-600' :
-                      'bg-amber-100 text-amber-600'
-                    }`}>
-                      {item.status === 'present' ? <CheckCircle className="w-5 h-5" /> :
-                       item.status === 'absent' ? <XCircle className="w-5 h-5" /> :
-                       <Calendar className="w-5 h-5" />}
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        item.status === "present"
+                          ? "bg-green-100 text-green-600"
+                          : item.status === "absent"
+                            ? "bg-red-100 text-red-600"
+                            : "bg-amber-100 text-amber-600"
+                      }`}
+                    >
+                      {item.status === "present" ? (
+                        <CheckCircle className="w-5 h-5" />
+                      ) : item.status === "absent" ? (
+                        <XCircle className="w-5 h-5" />
+                      ) : (
+                        <Calendar className="w-5 h-5" />
+                      )}
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">{item.name}</p>
-                      <p className="text-sm text-gray-500 capitalize">{item.status}</p>
+                      <p className="text-sm text-gray-500 capitalize">
+                        {item.status}
+                      </p>
                     </div>
                   </div>
                   <span className="text-sm text-gray-500">{item.time}</span>
@@ -193,6 +232,37 @@ export const HouseMasterDashboard: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+        
+        {/* Leave Students Dialog */}
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>All Leave Students Today</DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-3 max-h-[400px] overflow-y-auto">
+              {leaveStudents.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 rounded-lg bg-gray-50"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center">
+                      <Calendar className="w-4 h-4 text-yellow-600" />
+                    </div>
+
+                    <div>
+                      <p className="font-medium">{item.name}</p>
+                      <p className="text-xs text-gray-500">Leave</p>
+                    </div>
+                  </div>
+
+                  <span className="text-sm text-gray-500">{item.time}</span>
+                </div>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Quick Actions */}
         <Card>
@@ -202,17 +272,40 @@ export const HouseMasterDashboard: React.FC = () => {
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
               {[
-                { label: 'View Students', icon: Users, color: 'bg-blue-500' },
-                { label: 'Attendance Report', icon: Calendar, color: 'bg-emerald-500' },
-                { label: 'Send Notice', icon: TrendingUp, color: 'bg-purple-500' },
-                { label: 'House Events', icon: Home, color: 'bg-amber-500' },
+                { label: "View Students", 
+                  icon: Users, 
+                  color: "bg-blue-500" ,
+                  path: "/teacher/house-students",
+                },
+                {
+                  label: "Attendance Report",
+                  icon: Calendar,
+                  color: "bg-emerald-500",
+                  path: "/teacher/house-attendance",
+
+                },
+                {
+                  label: "Send Notice",
+                  icon: TrendingUp,
+                  color: "bg-purple-500",
+                  path: "",
+                },
+                { label: "House Events", 
+                  icon: Home, 
+                  color: "bg-amber-500" ,
+                  path: "",
+                },
+
               ].map((action) => (
                 <Button
                   key={action.label}
                   variant="outline"
                   className="flex flex-col items-center gap-3 h-auto py-6 hover:bg-gray-50"
-                  onClick={() => toast.info(`${action.label} coming soon`)}
+                  onClick={() => action.path
+                    ? navigate(action.path) 
+                    : toast.info(`${action.label} coming soon`)}
                 >
+
                   <div className={`${action.color} p-3 rounded-xl`}>
                     <action.icon className="w-6 h-6 text-white" />
                   </div>

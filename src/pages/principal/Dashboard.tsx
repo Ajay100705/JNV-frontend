@@ -13,6 +13,7 @@ import {
   TrendingDown,
   MoreHorizontal,
   Plus,
+  // UserCheck,
 } from 'lucide-react';
 import {
   BarChart,
@@ -201,6 +202,7 @@ export const PrincipalDashboard: React.FC = () => {
     };
   }) || [];
 
+
   return (
     <>
       {/* Header */}
@@ -236,7 +238,7 @@ export const PrincipalDashboard: React.FC = () => {
                   onClick={() => navigate('/principal/add-teacher')}
                 >
                   <CardContent className="flex flex-col items-center justify-center py-8">
-                    <div className="bg-blue-500 p-4 rounded-xl mb-3">
+                    <div className="bg-blue-500 p-4 rounded-xl mb-3 flex items-center justify-center w-14 h-14">
                       <Users className="w-6 h-6 text-white" />
                     </div>
                     <p className="font-medium">Add Teacher</p>
@@ -249,7 +251,7 @@ export const PrincipalDashboard: React.FC = () => {
                   onClick={() => navigate('/principal/add-student')}
                 >
                   <CardContent className="flex flex-col items-center justify-center py-8">
-                    <div className="bg-purple-500 p-4 rounded-xl mb-3">
+                    <div className="bg-purple-500 p-4 rounded-xl mb-3 flex items-center justify-center w-14 h-14">
                       <GraduationCap className="w-6 h-6 text-white" />
                     </div>
                     <p className="font-medium">Add Student</p>
@@ -262,10 +264,23 @@ export const PrincipalDashboard: React.FC = () => {
                   onClick={() => navigate('/principal/add-house-master')}
                 >
                   <CardContent className="flex flex-col items-center justify-center py-8">
-                    <div className="bg-emerald-500 p-4 rounded-xl mb-3">
+                    <div className="bg-emerald-500 p-4 rounded-xl mb-3 flex items-center justify-center w-14 h-14">
                       <UserCircle className="w-6 h-6 text-white" />
                     </div>
                     <p className="font-medium">Add House Master</p>
+                  </CardContent>
+                </Card>
+
+                {/* Add Class Teacher */}
+                <Card
+                  className="cursor-pointer hover:shadow-lg transition-all"
+                  onClick={() => navigate('/principal/add-class-teacher')}
+                >
+                  <CardContent className="flex flex-col items-center justify-center py-8">
+                    <div className="bg-amber-500 p-4 rounded-xl mb-3 flex items-center justify-center w-14 h-14">
+                      <Users className="w-6 h-6 text-white" />
+                    </div>
+                    <p className="font-medium">Add Class Teacher</p>
                   </CardContent>
                 </Card>
 
@@ -395,7 +410,7 @@ export const PrincipalDashboard: React.FC = () => {
             { label: 'Add Teacher', icon: Users, color: 'bg-blue-500', path: '/principal/add-teacher' },
             { label: 'Add Student', icon: GraduationCap, color: 'bg-purple-500', path: '/principal/add-student' },
             { label: 'Add House Master', icon: UserCircle, color: 'bg-emerald-500', path: '/principal/add-house-master' },
-            { label: 'View Reports', icon: TrendingUp, color: 'bg-amber-500' },
+            { label: 'Add Class Teacher', icon: Users, color: 'bg-amber-500', path: '/principal/add-class-teacher' },
           ].map((action, index) => (
             <Button
               key={action.label}

@@ -32,16 +32,16 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Check role-based access
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+  if (allowedRoles && user && !allowedRoles.includes(user.role as UserRole)) {
     // Redirect to appropriate dashboard based on role
     const roleDashboardMap: Record<UserRole, string> = {
       principal: '/principal/dashboard',
-      housemaster: '/housemaster/dashboard',
       teacher: '/teacher/dashboard',
+      student: '/student/dashboard',
       parent: '/parent/dashboard',
     };
     
-    return <Navigate to={roleDashboardMap[user.role]} replace />;
+    return <Navigate to={roleDashboardMap[user.role as UserRole] } replace />;
   }
 
   return <>{children}</>;

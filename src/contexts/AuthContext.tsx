@@ -6,8 +6,6 @@ import { toast } from 'sonner';
 import api from "@/api/axios";
 
 
-
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -110,8 +108,6 @@ export const getDashboardRoute = (role: UserRole): string => {
   switch (role) {
     case 'principal':
       return '/principal/dashboard';
-    case 'housemaster':
-      return '/housemaster/dashboard';
     case 'teacher':
       return '/teacher/dashboard';
     case 'parent':

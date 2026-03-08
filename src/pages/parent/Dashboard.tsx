@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-// import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 // import { Badge } from '@/components/ui/badge';
-import { mockApi } from '@/services/api';
-import { useAuth } from '@/contexts/AuthContext';
+import api from "@/api/axios";
+// import { useAuth } from '@/contexts/AuthContext';
 import {
   UserCircle,
   TrendingUp,
@@ -26,6 +25,7 @@ interface ParentStats {
   section: string;
   attendancePercentage: number;
   house: string;
+  category: string;
   recentMarks: { subject: string; marks: number; total: number }[];
 }
 
@@ -40,9 +40,9 @@ const StatCard: React.FC<{
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), delay);
-    return () => clearTimeout(timer);
-  }, [delay]);
+    const timer = setTimeout(() => setIsVisible(true), delay)
+    return () => clearTimeout(timer)
+  }, [delay])
 
   return (
     <Card
@@ -67,24 +67,61 @@ const StatCard: React.FC<{
 };
 
 export const ParentDashboard: React.FC = () => {
-  const { user } = useAuth();
+  // const { user } = useAuth();
   const [stats, setStats] = useState<ParentStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await mockApi.getParentStats(user?.childId || 'S001');
-        setStats(response.data);
-      } catch (error) {
-        console.error('Failed to fetch stats:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+        const profileRes = await api.get("/parents/profile/")
+        const parent = profileRes.data
+        const child = parent.children[0]
 
-    fetchStats();
-  }, [user?.childId]);
+        const attendanceRes = await api.get(
+          `/academic/parent/child-attendance/${child.id}/`
+        )
+
+        const marksRes = await api.get(
+          `/classes/student-marks/?student=${child.id}`
+        )
+
+        const attendance = attendanceRes.data
+
+        const total = attendance.length
+        const present = attendance.filter(
+          (a: any) => a.status === "present"
+        ).length
+
+        const attendancePercentage =
+          total > 0 ? Math.round((present / total) * 100) : 0
+
+        const recentMarks = marksRes.data.slice(0, 5).map((m: any) => ({
+          subject: m.subject_exam.subject.name,
+          marks: m.marks_obtained,
+          total: m.subject_exam.total_marks,
+        }))
+
+        setStats({
+          childName: `${child.first_name} ${child.last_name}`,
+          rollNumber: child.admission_number,
+          class: child.class_name,
+          section: child.section,
+          house: child.house_name,
+          category: child.house_category,
+          attendancePercentage,
+          recentMarks,
+        })
+      } catch (error) {
+        console.error("Dashboard error", error)
+        toast.error("Failed to load dashboard")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchStats()
+  }, [])
 
   const recentNotifications = [
     { title: 'Parent-Teacher Meeting', date: 'Tomorrow, 10:00 AM', type: 'event' },
@@ -140,9 +177,9 @@ export const ParentDashboard: React.FC = () => {
                 </span>
                 <span className="flex items-center gap-1">
                   <Home className="w-4 h-4" />
-                  {stats?.house}
+                  {stats?.house}-{stats?.category}
                 </span>
-                <span>Roll: {stats?.rollNumber}</span>
+                <span>Admission No : {stats?.rollNumber}</span>
               </div>
             </div>
             <div className="text-right">
@@ -165,7 +202,7 @@ export const ParentDashboard: React.FC = () => {
         />
         <StatCard
           title="Total Subjects"
-          value={5}
+          value={stats?.recentMarks.length || 0}
           icon={GraduationCap}
           subtitle="Active subjects"
           color="bg-blue-500"
@@ -203,9 +240,9 @@ export const ParentDashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {stats?.recentMarks.map((mark, index) => (
+              {stats?.recentMarks.map((mark, i) => (
                 <div
-                  key={index}
+                  key={i}
                   className="flex items-center justify-between p-3 rounded-lg bg-gray-50"
                 >
                   <div className="flex items-center gap-3">
