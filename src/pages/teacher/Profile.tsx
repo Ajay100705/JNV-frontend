@@ -9,7 +9,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Camera, Mail, Phone, MapPin, BookOpen, Shield, Save, GraduationCap } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/api/axios';
-import { Eye, EyeOff } from 'lucide-react'; 
+import { Eye, EyeOff } from 'lucide-react';
+import { getMediaUrl } from '@/lib/getMediaUrl'; 
 
 export const TeacherProfile: React.FC = () => {
   const { user, refreshUser } = useAuth();
@@ -206,7 +207,7 @@ const handleUpdatePassword = async () => {
                                 selectedFile
                                   ? URL.createObjectURL(selectedFile)
                                   : user.profile?.photo
-                                    ? `http://127.0.0.1:8000${user.profile.photo}`
+                                    ? getMediaUrl(user.profile.photo)
                                     : undefined
                               }
                               alt={displayName}

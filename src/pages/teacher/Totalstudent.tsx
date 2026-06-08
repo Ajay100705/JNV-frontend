@@ -6,6 +6,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Badge } from "@/components/ui/badge";
 import type { TeacherAllStudent } from "@/types";
 import api from "@/api/axios";
+import {getMediaUrl} from "@/lib/getMediaUrl";
 
 import {
   Table,
@@ -216,7 +217,7 @@ export const TeacherTotalStudents: React.FC = () => {
                         src={
                           student.photo.startsWith("http")
                             ? student.photo
-                            : `http://127.0.0.1:8000${student.photo}`
+                            : getMediaUrl(student.photo)
                         }
                         alt="Student"
                         className="w-10 h-10 rounded-full object-cover"
@@ -311,7 +312,7 @@ export const TeacherTotalStudents: React.FC = () => {
         src={
           selectedStudent.photo.startsWith("http")
             ? selectedStudent.photo
-            : `http://127.0.0.1:8000${selectedStudent.photo}`
+            : getMediaUrl(selectedStudent.photo)
         }
         alt="Student"
         className="w-20 h-20 rounded-full object-cover border-4 border-white shadow"
@@ -426,7 +427,7 @@ export const TeacherTotalStudents: React.FC = () => {
           src={
             selectedStudent.parent_photo.startsWith("http")
               ? selectedStudent.parent_photo
-              : `http://127.0.0.1:8000${selectedStudent.parent_photo}`
+              : getMediaUrl(selectedStudent.parent_photo)
           }
           alt="Parent"
           className="w-20 h-20 rounded-full object-cover border-4 border-gray-200 shadow-sm"

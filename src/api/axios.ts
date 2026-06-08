@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL:"https://jnv-backend-okdc.onrender.com/api",
+    // baseURL:"https://jnv-backend-okdc.onrender.com/api",
+    baseURL: import.meta.env.VITE_API_URL,
 
 });
 

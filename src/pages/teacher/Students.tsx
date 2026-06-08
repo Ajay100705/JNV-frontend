@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/api/axios";
+import { getMediaUrl } from "@/lib/getMediaUrl";
 // import { set } from 'date-fns';
 // import { se } from 'date-fns/locale';
 
@@ -218,7 +219,7 @@ export const TeacherStudents: React.FC = () => {
                     <TableCell>
                       {student.photo ? (
                         <img
-                          src={`http://127.0.0.1:8000${student.photo}`}
+                          src={getMediaUrl(student.photo)}
                           alt="Student"
                           className="w-10 h-10 rounded-full object-cover"
                         />
@@ -425,7 +426,7 @@ export const TeacherStudents: React.FC = () => {
                     src={
                       selectedStudent.photo.startsWith("http")
                         ? selectedStudent.photo
-                        : `http://127.0.0.1:8000${selectedStudent.photo}`
+                        : getMediaUrl(selectedStudent.photo)
                     }
                     alt="Student"
                     className="w-20 h-20 rounded-full object-cover border-4 border-white shadow"
@@ -536,7 +537,7 @@ export const TeacherStudents: React.FC = () => {
                       src={
                         selectedStudent.parent_photo.startsWith("http")
                           ? selectedStudent.parent_photo
-                          : `http://127.0.0.1:8000${selectedStudent.parent_photo}`
+                          : getMediaUrl(selectedStudent.parent_photo)
                       }
                       alt="Parent"
                       className="w-20 h-20 rounded-full object-cover border-4 border-gray-200 shadow-sm"

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { getMediaUrl } from "@/lib/getMediaUrl";
 
 import {
   Table,
@@ -130,7 +131,7 @@ export default function MarksManager() {
                       src={
                         student.photo.startsWith("http")
                         ? student.photo
-                        : `http://127.0.0.1:8000${student.photo}`
+                        : getMediaUrl(student.photo)
                       }
                       className="w-10 h-10 rounded-full object-cover"
                     />

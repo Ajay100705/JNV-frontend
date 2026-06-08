@@ -10,6 +10,7 @@ import { Camera, Mail, Phone, MapPin, Calendar, Shield, Save } from 'lucide-reac
 import { toast } from 'sonner';
 import api from "@/api/axios";
 import { Eye, EyeOff } from 'lucide-react'; 
+import { getMediaUrl } from '@/lib/getMediaUrl';
 
 
 export const PrincipalProfile: React.FC = () => {
@@ -197,7 +198,7 @@ const handleUpdatePassword = async () => {
                     selectedFile
                       ? URL.createObjectURL(selectedFile)
                       : user.profile?.photo
-                        ? `http://127.0.0.1:8000${user.profile.photo}`
+                        ? getMediaUrl(user.profile.photo)
                         : undefined
                   }
                   alt={displayName}

@@ -15,6 +15,7 @@ import api from "@/api/axios";
 import { Mail, Phone, MapPin, Users, Save } from "lucide-react";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
+import { getMediaUrl } from '@/lib/getMediaUrl';
 
 interface Child {
   id: number;
@@ -172,7 +173,7 @@ export const ParentProfile: React.FC = () => {
             <Avatar className="w-32 h-32 mx-auto">
               <AvatarImage
                 src={
-                  profile?.photo ? `http://127.0.0.1:8000${profile.photo}` : ""
+                  profile?.photo ? getMediaUrl(profile.photo) : ""
                 }
               />
               <AvatarFallback className="text-3xl">{initials}</AvatarFallback>
@@ -212,7 +213,7 @@ export const ParentProfile: React.FC = () => {
 
               <div className="flex items-center gap-4">
                 <img
-                  src={`http://127.0.0.1:8000${child.photo}`}
+                  src={getMediaUrl(child.photo)}
                   className="w-16 h-16 rounded-full object-cover"
                 />
 
@@ -303,7 +304,7 @@ export const ParentProfile: React.FC = () => {
     photoPreview
       ? photoPreview
       : profile?.photo
-      ? `http://127.0.0.1:8000${profile.photo}`
+      ? getMediaUrl(profile.photo)
       : undefined
   }
   alt="Preview"

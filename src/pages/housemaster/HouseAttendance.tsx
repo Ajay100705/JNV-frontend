@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Calendar } from "lucide-react";
+import { getMediaUrl } from "@/lib/getMediaUrl";
 
 import {
   Table,
@@ -142,7 +143,7 @@ export const HouseAttendance: React.FC = () => {
                     <TableCell>
                       {student.photo ? (
                         <img
-                          src={`http://127.0.0.1:8000${student.photo}`}
+                          src={getMediaUrl(student.photo)}
                           className="w-10 h-10 rounded-full object-cover"
                         />
                       ) : (

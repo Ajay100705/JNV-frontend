@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {getMediaUrl} from "@/lib/getMediaUrl";
 
 import {
   Table,
@@ -158,7 +159,7 @@ export const HouseMasterStudents: React.FC = () => {
                         src={
                           student.photo.startsWith("http")
                             ? student.photo
-                            : `http://127.0.0.1:8000${student.photo}`
+                            : getMediaUrl(student.photo)
                         }
                         alt="Student"
                         className="w-10 h-10 rounded-full object-cover border border-gray-200 shadow-sm"
@@ -241,7 +242,7 @@ export const HouseMasterStudents: React.FC = () => {
                     src={
                       selectedStudent.photo.startsWith("http")
                         ? selectedStudent.photo
-                        : `http://127.0.0.1:8000${selectedStudent.photo}`
+                        : getMediaUrl(selectedStudent.photo)
                     }
                     alt="Student"
                     className="w-20 h-20 rounded-full object-cover border-4 border-gray-200 shadow-sm"
@@ -371,7 +372,7 @@ export const HouseMasterStudents: React.FC = () => {
                       src={
                         selectedStudent.parent.Photo.startsWith("http")
                           ? selectedStudent.parent.Photo
-                          : `http://127.0.0.1:8000${selectedStudent.parent.Photo}`
+                          : getMediaUrl(selectedStudent.parent.Photo)
                       }
                       alt="Parent"
                       className="w-20 h-20 rounded-full object-cover border-4 border-gray-200 shadow-sm"
